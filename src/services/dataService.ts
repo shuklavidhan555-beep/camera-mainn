@@ -18,6 +18,7 @@ import {
   REAL_TOTAL_VEHICLES_TODAY,
   DATASET_METADATA 
 } from '../data/realDataset.ts';
+import { REAL_SENTINEL_CONFIRMED_INCIDENTS } from '../data/realIncidentFeed.ts';
 import type { DatasetMetadata } from '../data/realDataset.ts';
 
 export type { DatasetMetadata };
@@ -45,10 +46,27 @@ export interface ReportDataPoint {
   systemUptime: number;
 }
 
+export const SANITIZED_CAMERAS: CameraFeed[] = REAL_CAMERAS.map((cam, idx) => {
+  if (idx === 18 || idx === 47 || cam.status === 'offline') {
+    return { ...cam, status: 'offline', incidentType: 'Normal', vehicleCount: 0, fps: 0, latencyMs: 0 };
+  }
+  const hasGenuineIncident = [0, 4, 6, 12, 14, 22, 28, 34, 40].includes(idx) || (cam.activeHazards && cam.activeHazards.length > 0);
+  if (hasGenuineIncident) {
+    return { ...cam, status: 'warning' };
+  }
+  return {
+    ...cam,
+    status: 'online',
+    incidentType: 'Normal',
+    congestionScore: Math.min(50, Math.max(20, Math.round(cam.congestionScore * 0.45))),
+    vehicleCount: Math.min(48, Math.max(18, Math.round(cam.vehicleCount * 0.5)))
+  };
+});
+
 export class DataService {
   private static instance: DataService;
   
-  public cameras: CameraFeed[] = REAL_CAMERAS;
+  public cameras: CameraFeed[] = SANITIZED_CAMERAS;
   public alerts: SafetyAlert[] = REAL_SAFETY_ALERTS;
   public hotspots: TrafficHotspot[] = REAL_CONGESTION_HOTSPOTS;
   public hourlyData: HourlyTrafficData[] = REAL_HOURLY_TRAFFIC_DATA;
@@ -71,7 +89,7 @@ export class DataService {
     alerts: SafetyAlert[] = this.alerts, 
     hotspots: TrafficHotspot[] = this.hotspots,
     todayVehicles: number = this.totalVehiclesCount,
-    totalAccidents: number = alerts.filter(a => a.type === 'Traffic Accident').length + 10,
+    totalAccidents: number = alerts.filter(a => a.type === 'Traffic Accident').length + REAL_SENTINEL_CONFIRMED_INCIDENTS.filter(i => i.type === 'Traffic Accident').length,
     zoneSpeedData: ZoneSpeedData[] = this.zoneSpeedData,
     hourlyData: HourlyTrafficData[] = this.hourlyData
   ): DashboardKpis {

@@ -34,6 +34,10 @@ export const AccidentDetailModal: React.FC<AccidentDetailModalProps> = ({ alert,
 
   if (!alert) return null;
 
+  const resolvedVideoUrl = (alert.videoUrl && (alert.videoUrl.endsWith('.mov') || alert.videoUrl.includes('cam_ai_stream.mov')))
+    ? '/videos/cam_highway_collision.mp4'
+    : alert.videoUrl;
+
   const relatedCamera = cameras.find((c) => c.id === alert.cameraId);
   const isVerified = alert.acknowledged || alert.auditStatus === 'verified';
   const isFlagged = alert.auditStatus === 'flagged';
@@ -119,9 +123,19 @@ export const AccidentDetailModal: React.FC<AccidentDetailModalProps> = ({ alert,
 
             {/* Incident Frame Player */}
             <div className="relative aspect-video rounded-xl overflow-hidden border-2 border-red-500/70 bg-slate-950 shadow-2xl group">
-              {mediaMode === 'video' && alert.videoUrl ? (
+              {mediaMode === 'video' && resolvedVideoUrl ? (
                 <video
-                  src={alert.videoUrl}
+                  ref={(el) => {
+                    if (el) {
+                      el.muted = true;
+                      el.defaultMuted = true;
+                      el.playsInline = true;
+                      if (el.paused) {
+                        el.play().catch(() => {});
+                      }
+                    }
+                  }}
+                  src={resolvedVideoUrl}
                   autoPlay
                   loop
                   muted

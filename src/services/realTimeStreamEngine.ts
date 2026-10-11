@@ -286,7 +286,7 @@ export class RealTimeStreamEngine {
       vehiclesInvolved: rawIncident.vehiclesInvolved,
       snapshotBg: rawIncident.type === 'Traffic Accident' ? 'accident' : rawIncident.type === 'Wrong-Way Vehicle' ? 'wrongway' : 'speed',
       imageUrl: rawIncident.imageUrl || '/incidents/accident_detection.jpg',
-      videoUrl: rawIncident.videoUrl || '/videos/cam_ai_stream.mov',
+      videoUrl: (rawIncident.videoUrl && !rawIncident.videoUrl.endsWith('.mov')) ? rawIncident.videoUrl : '/videos/cam_highway_collision.mp4',
       auditStatus: 'pending',
       collisionType: rawIncident.collisionType,
       proximityMeters: rawIncident.proximityMeters,

@@ -23,7 +23,7 @@ import {
   REAL_TOTAL_VEHICLES_TODAY, 
   DATASET_METADATA 
 } from '../data/realDataset';
-import { dataService, DashboardKpis, DatasetMetadata } from '../services/dataService';
+import { dataService, DashboardKpis, DatasetMetadata, SANITIZED_CAMERAS } from '../services/dataService';
 import { realTimeStreamEngine } from '../services/realTimeStreamEngine';
 
 interface ToastMessage {
@@ -134,7 +134,7 @@ const playControlRoomBeep = (freq = 880, type: OscillatorType = 'sine', duration
 export const CommandCenterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeTab, setActiveTab] = useState<NavigationTab>('overview');
   const [theme, setThemeState] = useState<ThemeMode>('dark');
-  const [cameras, setCameras] = useState<CameraFeed[]>(INITIAL_CAMERAS);
+  const [cameras, setCameras] = useState<CameraFeed[]>(SANITIZED_CAMERAS);
   const [safetyAlerts, setSafetyAlerts] = useState<SafetyAlert[]>(INITIAL_SAFETY_ALERTS);
   const [hotspots, setHotspots] = useState<TrafficHotspot[]>(CONGESTION_HOTSPOTS);
   const [hourlyData, setHourlyData] = useState<HourlyTrafficData[]>(HOURLY_TRAFFIC_DATA);
@@ -157,7 +157,7 @@ export const CommandCenterProvider: React.FC<{ children: React.ReactNode }> = ({
   const [streamSpeed, setStreamSpeedState] = useState<1 | 2 | 5>(1);
   const [streamTickCount, setStreamTickCount] = useState<number>(0);
   const [todayVehiclesCount, setTodayVehiclesCount] = useState<number>(REAL_TOTAL_VEHICLES_TODAY || 23801);
-  const [todayAccidentsCount, setTodayAccidentsCount] = useState<number>(14);
+  const [todayAccidentsCount, setTodayAccidentsCount] = useState<number>(realTimeStreamEngine.todayAccidentsCount);
   const [streamBandwidthMbps, setStreamBandwidthMbps] = useState<number>(54.2);
 
   // Sync theme to document body

@@ -12,6 +12,7 @@ import {
   Radio
 } from 'lucide-react';
 import { formatNumber, cn } from '../../lib/utils';
+import { REAL_TOTAL_VEHICLES_TODAY } from '../../data/realDataset';
 
 export const KpiOverviewCards: React.FC = () => {
   const { 
@@ -92,7 +93,7 @@ export const KpiOverviewCards: React.FC = () => {
             {formatNumber(todayVehiclesCount)}
           </span>
           <span className="text-xs font-mono text-emerald-400 bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-800/60 animate-pulse">
-            {(todayVehiclesCount - 23801) > 0 ? `+${todayVehiclesCount - 23801} live` : 'streaming'}
+            {(todayVehiclesCount - REAL_TOTAL_VEHICLES_TODAY) > 0 ? `+${todayVehiclesCount - REAL_TOTAL_VEHICLES_TODAY} live` : 'streaming'}
           </span>
         </div>
 

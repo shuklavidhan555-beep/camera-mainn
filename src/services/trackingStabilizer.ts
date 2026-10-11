@@ -341,19 +341,23 @@ export class TrackingStabilizerService {
         // Opposing trajectory vectors -> Head-On Collision
         scenario = 'Head-On';
         relativeSpeed = speedA + speedB;
+      } else if (accelA < -6.0 || accelB < -6.0) {
+        // Crash / violent kinetic deceleration
+        scenario = (isVerticalAlignment || (hasAngles && angleDiff < 45)) ? 'Rear-End' : 'Head-On';
+        relativeSpeed = Math.abs(speedA - speedB);
       } else if (accelA < -4.0 || accelB < -4.0) {
         scenario = 'Sudden Braking';
         relativeSpeed = Math.abs(speedA - speedB) + 15;
-      } else if ((hasAngles && angleDiff >= 45 && angleDiff <= 135) || (Math.abs(dx) > 8 && Math.abs(dy) > 8 && Math.abs(dx) < 25 && Math.abs(dy) < 25)) {
+      } else if ((hasAngles && angleDiff >= 45 && angleDiff <= 135) || (Math.abs(dx) > 12 && Math.abs(dy) > 12 && Math.abs(dx) < 25 && Math.abs(dy) < 25)) {
         scenario = 'T-Bone';
         relativeSpeed = Math.sqrt(speedA * speedA + speedB * speedB) * 0.75;
       } else if (isVerticalAlignment || (hasAngles && angleDiff < 45)) {
         // Same corridor / direction -> Rear-End or Unsafe Headway
-        scenario = 'Rear-End';
         relativeSpeed = Math.abs(speedA - speedB);
-        if (relativeSpeed < 10 && proximityMeters < 10) {
+        if (relativeSpeed > 25 && proximityMeters < 8.0) {
+          scenario = 'Rear-End';
+        } else {
           scenario = 'Unsafe Headway';
-          relativeSpeed = Math.max(relativeSpeed, 20);
         }
       } else {
         scenario = 'Unsafe Headway';
@@ -402,19 +406,33 @@ export class TrackingStabilizerService {
     }
 
     // Hazard Status Categorization
+    // A collision is strictly reported ONLY when there is an actual physical collision:
+    // (1) Violent kinetic impact deceleration (accel < -6.0 m/s^2) with contact or close proximity
+    // (2) Head-on collision trajectory with high closure velocity (>100 km/h) and immediate impact (<1.0s, proximity < 5m)
+    // (3) Direct acute vehicle-pedestrian impact at high closure speed
     const isViolentDecel = accelA < -6.0 || accelB < -6.0;
+    const isViolentCollision = isViolentDecel && (boxesOverlap || proximityMeters <= 5.0);
+    const isHeadOnCrash = scenario === 'Head-On' && proximityMeters < 5.0 && relativeSpeed > 100 && (ttcSec !== null && ttcSec < 1.0);
+    const isDirectPedestrianCollision = interactionType === 'vehicle-pedestrian' && proximityMeters <= 1.0 && relativeSpeed > 35;
+
     let status: KinematicInteraction['status'] = 'Caution: Hazard Ahead';
     let riskScore = 30;
 
-    if (boxesOverlap || proximityMeters <= 3.2 || isViolentDecel || (ttcSec !== null && ttcSec < 0.6)) {
+    if (isViolentCollision || isHeadOnCrash || isDirectPedestrianCollision) {
       status = 'Critical: Active Collision';
       riskScore = 95;
-    } else if ((ttcSec !== null && ttcSec < 1.5) || (proximityMeters < 9.0 && relativeSpeed > 25)) {
+    } else if (
+      (interactionType === 'vehicle-pedestrian' && proximityMeters < 8.0 && relativeSpeed > 20 && (ttcSec !== null && ttcSec <= 1.5)) ||
+      (interactionType === 'vehicle-animal' && proximityMeters < 10.0) ||
+      (scenario === 'Trajectory Conflict' && proximityMeters < 8.0) ||
+      (scenario === 'Sudden Braking' && proximityMeters < 6.0) ||
+      (ttcSec !== null && ttcSec < 1.5 && relativeSpeed > 25 && proximityMeters < 8.0)
+    ) {
       status = 'Warning: Accident-Prone Near-Miss';
-      riskScore = 78;
+      riskScore = interactionType === 'vehicle-animal' ? 74 : 78;
     } else if (proximityMeters < 18.0) {
       status = 'Caution: Hazard Ahead';
-      riskScore = interactionType === 'vehicle-animal' ? 72 : 52;
+      riskScore = interactionType === 'vehicle-animal' ? 70 : 45;
     } else {
       // Safe distance without significant risk
       return null;

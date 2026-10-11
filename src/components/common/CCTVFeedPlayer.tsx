@@ -8,13 +8,11 @@ import {
   Moon,
   WifiOff,
   ZoomIn,
-  Activity,
   RotateCcw,
   Video
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCommandCenter } from '../../context/CommandCenterContext';
-import { SyntheticCCTVStream } from './SyntheticCCTVStream';
 import { modelInferenceService } from '../../services/modelInferenceService';
 
 interface CCTVFeedPlayerProps {
@@ -39,10 +37,18 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
   const [currentTimecode, setCurrentTimecode] = useState('');
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [hasVideoError, setHasVideoError] = useState(false);
-  const [forceSynthMode, setForceSynthMode] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Fast, browser-compatible stream: Map ProRes MOV (which browsers cannot decode) to real MP4
+  const resolvedVideoUrl = React.useMemo(() => {
+    if (!camera.videoUrl) return undefined;
+    if (camera.videoUrl.endsWith('.mov') || camera.videoUrl.includes('cam_ai_stream.mov')) {
+      return '/videos/cam_downtown_cmc.mp4';
+    }
+    return camera.videoUrl;
+  }, [camera.videoUrl]);
 
   // Track-stabilized and de-jittered objects (removes random flickering and enforces physical bounds)
   const stabilizedObjects = React.useMemo(() => {
@@ -51,23 +57,19 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
 
   // Compute multi-entity kinematic interactions (TTC, proximity, relative velocity)
   const activeInteractions = React.useMemo(() => {
-    return modelInferenceService.analyzeMultiEntityInteractions(stabilizedObjects);
-  }, [stabilizedObjects]);
+    const computed = modelInferenceService.analyzeMultiEntityInteractions(stabilizedObjects);
+    if (camera.activeHazards && camera.activeHazards.length > 0) {
+      return [...camera.activeHazards, ...computed];
+    }
+    return computed;
+  }, [camera.activeHazards, stabilizedObjects]);
 
-  // Highest severity active hazard for top HUD banner
+  // Highest severity active hazard for top HUD banner (strictly display genuine collision or severe near-miss)
   const highestHazard = React.useMemo(() => {
     return activeInteractions.find((h) => h.status === 'Critical: Active Collision')
       || activeInteractions.find((h) => h.status === 'Warning: Accident-Prone Near-Miss')
-      || activeInteractions.find((h) => h.status === 'Caution: Hazard Ahead')
       || null;
   }, [activeInteractions]);
-
-  const [prevCameraKey, setPrevCameraKey] = useState(camera.id + camera.videoUrl);
-  if (prevCameraKey !== camera.id + camera.videoUrl) {
-    setPrevCameraKey(camera.id + camera.videoUrl);
-    setIsVideoPlaying(false);
-    setHasVideoError(false);
-  }
 
   // Live second-by-second timecode
   useEffect(() => {
@@ -82,10 +84,10 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  // Safe DOM Video Autoplay handler
+  // Reliable DOM Video Autoplay handler with proper muted & playsInline attributes
   const setupAndPlayVideo = useCallback(() => {
     const video = videoRef.current;
-    if (!video || camera.status === 'offline' || !camera.videoUrl || forceSynthMode) {
+    if (!video || camera.status === 'offline' || !resolvedVideoUrl) {
       setIsVideoPlaying(false);
       return;
     }
@@ -102,14 +104,16 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
           setHasVideoError(false);
         })
         .catch(() => {
-          // Autoplay suspended or pending user gesture; canvas stream remains active underneath
+          // Autoplay suspended or pending user gesture
         });
     }
-  }, [camera.status, camera.videoUrl, forceSynthMode]);
+  }, [camera.status, resolvedVideoUrl]);
 
   useEffect(() => {
+    setIsVideoPlaying(false);
+    setHasVideoError(false);
     setupAndPlayVideo();
-  }, [setupAndPlayVideo]);
+  }, [camera.id, resolvedVideoUrl, setupAndPlayVideo]);
 
   const handleCaptureSnapshot = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -120,7 +124,7 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
       const ctx = canvas.getContext('2d');
       if (ctx) {
         const video = videoRef.current;
-        if (video && isVideoPlaying && !hasVideoError && !forceSynthMode) {
+        if (video && isVideoPlaying && !hasVideoError) {
           ctx.drawImage(video, 0, 0, 1280, 720);
         } else {
           // Render informative evidence capture frame
@@ -158,6 +162,20 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
   const isOffline = camera.status === 'offline';
   const isWarning = camera.status === 'warning';
 
+  const handleContainerClick = () => {
+    if (videoRef.current && videoRef.current.paused && !isOffline && resolvedVideoUrl) {
+      videoRef.current.play().then(() => {
+        setIsVideoPlaying(true);
+        setHasVideoError(false);
+      }).catch(() => {});
+    }
+    if (onSelect) {
+      onSelect();
+    } else {
+      setSelectedCamera(camera);
+    }
+  };
+
   return (
     <div 
       ref={containerRef}
@@ -166,7 +184,7 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
         isOffline ? "border-slate-800" : isWarning ? "border-amber-500/50" : "border-slate-800/80 hover:border-cyan-500/60",
         className
       )}
-      onClick={onSelect || (() => setSelectedCamera(camera))}
+      onClick={handleContainerClick}
     >
       {/* CCTV Screen Viewport */}
       <div 
@@ -176,13 +194,16 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
         )}
         style={{ transform: `scale(${zoomLevel})` }}
       >
-        {/* Layer 1: High-Performance Edge Vision Canvas Stream Engine (Always running underneath to guarantee zero black screens) */}
-        <div className="absolute inset-0 w-full h-full">
-          <SyntheticCCTVStream camera={camera} isNightVision={isNightVision} />
-        </div>
+        {/* Base Layer: Authentic photographic CCTV frame (guarantees authentic footage, never cartoon) */}
+        <img
+          src={camera.imageUrl || '/incidents/accident_detection.jpg'}
+          alt={camera.name}
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+        />
 
-        {/* Layer 2: Real H.264 MP4 Stream (Crossfades seamlessly over canvas when playing) */}
-        {camera.videoUrl && !hasVideoError && !isOffline && !forceSynthMode && (
+        {/* Real CCTV Video Stream (Plays genuine H.264/MP4 stream over photographic base) */}
+        {resolvedVideoUrl && !hasVideoError && !isOffline && (
           <video
             ref={(el) => {
               videoRef.current = el;
@@ -190,17 +211,27 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
                 el.muted = true;
                 el.defaultMuted = true;
                 el.playsInline = true;
+                if (el.paused) {
+                  el.play().catch(() => {});
+                }
               }
             }}
-            src={camera.videoUrl}
+            src={resolvedVideoUrl}
             autoPlay
             loop
             muted
             playsInline
             preload={isDetailed ? "auto" : "metadata"}
+            onPlay={() => setIsVideoPlaying(true)}
             onPlaying={() => {
               setIsVideoPlaying(true);
               setHasVideoError(false);
+            }}
+            onCanPlay={(e) => {
+              const el = e.currentTarget;
+              if (el.paused) {
+                el.play().catch(() => {});
+              }
             }}
             onLoadedData={() => {
               setupAndPlayVideo();
@@ -216,8 +247,7 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
               setIsVideoPlaying(false);
             }}
             className={cn(
-              "absolute inset-0 w-full h-full object-cover transition-opacity duration-500 pointer-events-none",
-              isVideoPlaying ? "opacity-100" : "opacity-0"
+              "absolute inset-0 w-full h-full object-cover transition-opacity duration-300 pointer-events-none opacity-100"
             )}
           />
         )}
@@ -463,35 +493,15 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
               {camera.resolution}
             </span>
 
-            {/* Stream Mode Switcher Badge */}
-            {isVideoPlaying && !forceSynthMode ? (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setForceSynthMode(true);
-                  showToast('Stream Mode', `Switched ${camera.id} to Edge Vision Stream`, 'info');
-                }}
-                title="Click to toggle Edge Vision Stream"
-                className="bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/60 text-emerald-300 px-1.5 py-0.5 rounded text-[9px] font-bold flex items-center gap-1 transition-colors"
+            {/* Stream Mode Indicator */}
+            {!isOffline && (
+              <span
+                title={resolvedVideoUrl && !hasVideoError ? "Active RTSP Video Feed" : "Static CCTV Sensor Snapshot"}
+                className="bg-emerald-950/80 border border-emerald-600/60 text-emerald-300 px-1.5 py-0.5 rounded text-[9px] font-bold flex items-center gap-1"
               >
-                <Video className="w-2.5 h-2.5" /> LIVE RTSP
-              </button>
-            ) : !isOffline ? (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setForceSynthMode(false);
-                  setupAndPlayVideo();
-                  showToast('Stream Mode', `Connecting ${camera.id} to RTSP Video Stream`, 'info');
-                }}
-                title="Click to connect RTSP Video Stream"
-                className="bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-600/60 text-cyan-300 px-1.5 py-0.5 rounded text-[9px] font-bold flex items-center gap-1 transition-colors"
-              >
-                <Activity className="w-2.5 h-2.5 animate-pulse" /> EDGE VISION
-              </button>
-            ) : null}
+                <Video className="w-2.5 h-2.5" /> {resolvedVideoUrl && !hasVideoError ? 'LIVE RTSP' : 'CCTV FRAME'}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2">

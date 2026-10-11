@@ -2765,7 +2765,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 77
     },
     "videoTheme": "highway",
-    "videoUrl": "/videos/cam_ai_stream.mov",
+    "videoUrl": "/videos/cam_highway_collision.mp4",
     "imageUrl": "/incidents/testing1.jpg",
     "objects": [
       {
@@ -4284,7 +4284,7 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
     ],
     "snapshotBg": "accident",
     "imageUrl": "/incidents/accident_detection.jpg",
-    "videoUrl": "/videos/cam_ai_stream.mov",
+    "videoUrl": "/videos/cam_highway_collision.mp4",
     "auditStatus": "pending"
   },
   {
