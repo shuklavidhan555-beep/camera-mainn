@@ -91,10 +91,9 @@ export interface SafetyAlert {
   snapshotBg: string;
   imageUrl?: string;
   videoUrl?: string;
-  dispatchedStatus?: 'none' | 'dispatching' | 'dispatched';
-  dispatchedUnits?: string[];
-  dispatchedAt?: string;
-  etaMinutes?: number;
+  auditStatus?: 'pending' | 'verified' | 'flagged';
+  verifiedAt?: string;
+  verifiedBy?: string;
   collisionType?: 'Vehicle-Vehicle' | 'Vehicle-Pedestrian' | 'Vehicle-Animal';
   timeToCollisionSec?: number;
   proximityMeters?: number;

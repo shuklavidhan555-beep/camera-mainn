@@ -22,6 +22,7 @@ export interface IncidentClassificationResult {
   classProbabilities: { className: string; probability: number }[];
   severity: 'Critical' | 'High' | 'Medium' | 'Low';
   recommendedDispatch: string;
+  surveillanceAction: string;
 }
 
 export interface KinematicClassificationResult {
@@ -30,6 +31,7 @@ export interface KinematicClassificationResult {
   classProbabilities: { className: string; probability: number }[];
   riskScore: number;
   recommendedProtocol: string;
+  surveillanceProtocol: string;
 }
 
 export interface ModelTelemetryStats {
@@ -146,22 +148,27 @@ export class ModelInferenceService {
     classProbabilities.sort((a, b) => b.probability - a.probability);
     const topClass = classProbabilities[0];
 
-    // Determine severity and recommended dispatch protocols
+    // Determine severity and recommended protocols
     let severity: IncidentClassificationResult['severity'] = 'Low';
     let dispatch = 'Standby - Autonomous Monitoring Active';
+    let surveillanceAction = 'Standby - Autonomous Monitoring Active';
 
     if (topClass.className === 'Kinetic Collision Risk') {
       severity = 'Critical';
       dispatch = 'EMS Ambulance + Highway Patrol Rapid Rescue';
+      surveillanceAction = 'High-Priority Forensic Snapshot & PTZ Tracking';
     } else if (topClass.className === 'Wrong-Way Anomaly') {
       severity = 'Critical';
       dispatch = 'Highway Patrol Interceptor + Smart Ramp Closure';
+      surveillanceAction = 'Optical Track Lock & Variable Speed Signage Warning';
     } else if (topClass.className === 'Overspeeding Violation') {
       severity = 'High';
       dispatch = 'Automated Speed Citation Unit + PTZ Camera Tracking';
+      surveillanceAction = 'Automated Speed Optical Recognition & Citation Logging';
     } else if (topClass.className === 'High Congestion') {
       severity = 'Medium';
       dispatch = 'Adaptive Traffic Signal Optimization + Dynamic VMS Guidance';
+      surveillanceAction = 'Adaptive Signal Optimization & Dynamic VMS Guidance';
     }
 
     return {
@@ -169,7 +176,8 @@ export class ModelInferenceService {
       confidence: topClass.probability,
       classProbabilities,
       severity,
-      recommendedDispatch: dispatch
+      recommendedDispatch: dispatch,
+      surveillanceAction
     };
   }
 
@@ -231,12 +239,16 @@ export class ModelInferenceService {
     const topClass = sorted[0];
 
     let protocol = 'Monitoring Safe Headway & Separation';
+    let surveillanceProtocol = 'Monitoring Safe Headway & Separation';
     if (topClass.className === 'Critical: Active Collision') {
       protocol = 'Immediate Autonomous EMS & Police Dispatch + Signal Hold';
+      surveillanceProtocol = 'Incident Logging & PTZ Auto-Lock + Signal Hold';
     } else if (topClass.className === 'Warning: Accident-Prone Near-Miss') {
       protocol = 'VMS Collision Avoidance Warning + Automated Speed Intervention';
+      surveillanceProtocol = 'VMS Collision Avoidance Warning + Automated Speed Intervention';
     } else if (topClass.className === 'Caution: Hazard Ahead') {
       protocol = 'Pedestrian/Wildlife Roadway Alert + PTZ Camera Tracking';
+      surveillanceProtocol = 'Pedestrian/Wildlife Roadway Alert + PTZ Camera Tracking';
     }
 
     const riskScore = topClass.className === 'Critical: Active Collision' 
@@ -252,7 +264,8 @@ export class ModelInferenceService {
       confidence: topClass.probability,
       classProbabilities,
       riskScore,
-      recommendedProtocol: protocol
+      recommendedProtocol: protocol,
+      surveillanceProtocol
     };
   }
 

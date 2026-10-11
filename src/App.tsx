@@ -2,7 +2,7 @@ import React from 'react';
 import { CommandCenterProvider, useCommandCenter } from './context/CommandCenterContext';
 import { TopBar } from './components/layout/TopBar';
 import { Sidebar } from './components/layout/Sidebar';
-import { EmergencyBanner } from './components/layout/EmergencyBanner';
+import { SurveillanceAlertBanner } from './components/layout/EmergencyBanner';
 import { ToastContainer } from './components/common/ToastContainer';
 import { OverviewPage } from './components/overview/OverviewPage';
 import { LiveSurveillancePage } from './components/surveillance/LiveSurveillancePage';
@@ -35,8 +35,8 @@ const DashboardContent: React.FC = () => {
 
       {/* Main Command Center Stage */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        {/* Top Emergency Warning Banner */}
-        <EmergencyBanner />
+        {/* Top Critical Surveillance Alert Monitor */}
+        <SurveillanceAlertBanner />
 
         {/* Top Navigation & Status Bar */}
         <TopBar />
@@ -54,7 +54,7 @@ const DashboardContent: React.FC = () => {
           {/* Bottom command center watermark */}
           <footer className="mt-8 pt-4 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-slate-500 gap-2">
             <div>
-              SmartCity Command Center v4.8 • AI Vision Engine Active • ISO 37120 Compliant
+              Smart Surveillance System v4.8 • Intelligent Video Analytics Engine • ISO 37120 Compliant
             </div>
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1.5 text-emerald-400">

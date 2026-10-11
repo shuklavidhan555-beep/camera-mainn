@@ -397,6 +397,7 @@ test('Kinematic Collision Classifier Trained Weights & Artifacts', async (t) => 
     assert.equal(acuteCollision.predictedClass, 'Critical: Active Collision');
     assert.ok(acuteCollision.confidence > 75, `Acute collision should have high confidence (got ${acuteCollision.confidence}%)`);
     assert.ok(acuteCollision.recommendedProtocol.includes('EMS'), 'Protocol must recommend EMS dispatch');
+    assert.ok(acuteCollision.surveillanceProtocol.includes('Incident Logging & PTZ Auto-Lock'), 'Protocol must recommend surveillance incident logging');
 
     const safeFlow = modelInferenceService.classifyKinematicInteraction({
       proximityMeters: 45.0,

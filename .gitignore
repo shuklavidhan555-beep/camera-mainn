@@ -38,3 +38,6 @@ _calenzo_archive/
 
 # Gemini/Antigravity local data
 .gemini/
+
+# Scratch scripts
+*.ps1

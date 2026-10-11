@@ -4,10 +4,14 @@ import { useCommandCenter } from '../../context/CommandCenterContext';
 import { 
   X, 
   CheckCircle, 
-  Siren, 
+  CheckCircle2,
+  ShieldAlert, 
   Sparkles,
   Car,
-  Activity
+  Camera,
+  FileText,
+  Download,
+  AlertTriangle
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -17,44 +21,58 @@ interface AccidentDetailModalProps {
 }
 
 export const AccidentDetailModal: React.FC<AccidentDetailModalProps> = ({ alert, onClose }) => {
-  const { dispatchEmergencyTeam, acknowledgeAlert, cameras } = useCommandCenter();
-  const [selectedUnit, setSelectedUnit] = useState<string>('EMS Ambulance + Highway Patrol');
-  const [isDispatching, setIsDispatching] = useState(false);
+  const { 
+    verifyIncidentDetection, 
+    flagForSecurityAudit, 
+    exportForensicReport, 
+    cameras, 
+    setSelectedCamera 
+  } = useCommandCenter();
+
   const [mediaMode, setMediaMode] = useState<'video' | 'snapshot'>('snapshot');
+  const [isVerifying, setIsVerifying] = useState(false);
 
   if (!alert) return null;
 
-  const handleDispatch = () => {
-    setIsDispatching(true);
+  const relatedCamera = cameras.find((c) => c.id === alert.cameraId);
+  const isVerified = alert.acknowledged || alert.auditStatus === 'verified';
+  const isFlagged = alert.auditStatus === 'flagged';
+
+  const handleVerify = () => {
+    setIsVerifying(true);
     setTimeout(() => {
-      dispatchEmergencyTeam(alert.id, selectedUnit);
-      setIsDispatching(false);
-    }, 900);
+      verifyIncidentDetection(alert.id);
+      setIsVerifying(false);
+    }, 350);
   };
 
-  const isDispatched = alert.dispatchedStatus === 'dispatched';
-  const relatedCamera = cameras.find((c) => c.id === alert.cameraId);
+  const handleInspectFeed = () => {
+    if (relatedCamera) {
+      setSelectedCamera(relatedCamera);
+      onClose();
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 md:p-6 overflow-y-auto animate-in fade-in duration-200">
       <div className="bg-[#0b101c] border border-red-500/60 rounded-2xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
-        {/* Top Emergency Bar */}
+        {/* Top Surveillance Incident Header Bar */}
         <div className="p-4 bg-red-950/70 border-b border-red-800/80 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-red-600 text-white animate-pulse">
-              <Siren className="w-5 h-5" />
+              <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono font-extrabold uppercase px-2 py-0.5 rounded bg-red-600 text-white">
-                  PRIORITY 1 // {alert.severity}
+                  SURVEILLANCE HAZARD // {alert.severity}
                 </span>
                 <h2 className="text-base font-bold text-white tracking-wide">
                   {alert.type}: {alert.location}
                 </h2>
               </div>
               <p className="text-xs text-red-200/80 font-mono mt-0.5">
-                Incident ID: {alert.id} • Camera: {alert.cameraId} {relatedCamera ? `(${relatedCamera.name})` : ''} • Triggered: {alert.timestamp}
+                Incident ID: {alert.id} • Sensor Node: {alert.cameraId} {relatedCamera ? `(${relatedCamera.name})` : ''} • Detected: {alert.timestamp}
               </p>
             </div>
           </div>
@@ -62,6 +80,7 @@ export const AccidentDetailModal: React.FC<AccidentDetailModalProps> = ({ alert,
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg bg-black/40 hover:bg-black/70 text-slate-300 hover:text-white transition-colors"
+            title="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
@@ -118,85 +137,59 @@ export const AccidentDetailModal: React.FC<AccidentDetailModalProps> = ({ alert,
                   />
                   {/* Subtle CCTV Scanline & Vignette */}
                   <div className="absolute inset-0 cctv-scanline opacity-30 pointer-events-none" />
-                  <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_50px_rgba(0,0,0,0.8)]" />
-
-                  {/* Dynamic Tactical AI Overlays on Image */}
-                  <div 
-                    className="absolute border-2 border-red-500 bg-red-500/15 p-1 flex flex-col justify-between pointer-events-none animate-pulse"
-                    style={{ left: '28%', top: '38%', width: '38%', height: '35%' }}
-                  >
-                    <div className="flex items-center gap-1 -translate-y-4">
-                      <span className="bg-red-600 text-white font-mono font-bold text-[9px] px-1 py-0.2 rounded shadow">
-                        IMPACT CRITICAL [{alert.confidence}%]
-                      </span>
+                  
+                  {/* Bounding Box Simulation Overlay */}
+                  <div className="absolute inset-0 p-4 pointer-events-none flex items-center justify-center">
+                    <div className="border-2 border-red-500/90 rounded bg-red-500/10 w-3/4 h-3/5 relative animate-pulse">
+                      <div className="absolute -top-6 left-0 bg-red-600 text-white text-[10px] font-mono px-1.5 py-0.5 rounded font-bold shadow">
+                        IMPACT HAZARD // {alert.confidence}%
+                      </div>
+                      <div className="absolute -bottom-5 right-0 bg-black/80 text-cyan-300 text-[9px] font-mono px-1.5 py-0.5 rounded border border-slate-700">
+                        {alert.collisionType || 'MULTI-ENTITY CONFLICT'}
+                      </div>
                     </div>
-                    <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-red-400" />
-                    <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-red-400" />
-                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-red-400" />
-                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-red-400" />
                   </div>
                 </>
               ) : (
-                /* Fallback Edge Vector Tactical Map */
-                <svg className="w-full h-full object-cover" viewBox="0 0 100 100">
-                  <rect width="100" height="100" fill="#0d1424" />
-                  <rect x="25" y="0" width="50" height="100" fill="#141c2e" />
-                  <rect x="0" y="25" width="100" height="50" fill="#141c2e" />
-                  <circle cx="48" cy="45" r="14" fill="#ef4444" opacity="0.3" className="animate-ping" />
-                  <circle cx="48" cy="45" r="8" fill="#f59e0b" opacity="0.5" />
-                  <circle cx="48" cy="45" r="3" fill="#ffffff" />
-                  <text x="35" y="47" fill="#ffffff" fontSize="4" fontFamily="monospace" fontWeight="bold">COLLISION POINT</text>
-                </svg>
+                <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 font-mono text-xs">
+                  <span>No recorded media stream for camera {alert.cameraId}</span>
+                </div>
               )}
 
-              {/* HUD Timestamp & Watermark */}
-              <div className="absolute top-2 left-2 flex items-center gap-2 text-[10px] font-mono bg-black/80 px-2 py-0.5 rounded text-white border border-red-500/50 backdrop-blur">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-blink" />
-                <span>INCIDENT EVIDENCE SNAPSHOT // {alert.timestamp}</span>
-              </div>
-
-              <div className="absolute bottom-2 right-2 text-[10px] font-mono bg-black/80 px-2 py-0.5 rounded text-cyan-300 border border-slate-700 backdrop-blur">
-                AI CONFIDENCE: {alert.confidence}%
+              {/* Watermark & Timestamp Overlay */}
+              <div className="absolute top-3 left-3 bg-black/75 px-2.5 py-1 rounded text-[11px] font-mono text-cyan-300 border border-slate-800 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                <span>REC • SENSOR {alert.cameraId} • {alert.timestamp}</span>
               </div>
             </div>
 
-            {/* Multi-Entity Kinematic Collision Card */}
-            {(alert.collisionType || alert.hazardStatus || alert.proximityMeters !== undefined) && (
-              <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/60 text-xs font-mono space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-red-300 font-bold">
-                    <Activity className="w-3.5 h-3.5 text-red-400 animate-pulse" />
-                    Kinematic Multi-Entity Collision Telemetry
-                  </span>
-                  <span className={cn(
-                    "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                    alert.hazardStatus?.includes('Critical') ? "bg-red-600 text-white" : "bg-amber-600 text-white"
-                  )}>
-                    {alert.hazardStatus || 'Critical: Active Collision'}
+            {/* Kinematic Collision Vector Telemetry Pill */}
+            {(alert.collisionType || alert.hazardStatus || alert.timeToCollisionSec !== undefined) && (
+              <div className="p-3 rounded-xl bg-red-950/40 border border-red-500/60 font-mono text-xs space-y-2">
+                <div className="flex items-center justify-between text-red-200">
+                  <div className="flex items-center gap-2 font-bold">
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                    <span>Kinematic Radar Telemetry: {alert.collisionType || 'Multi-Entity Collision'}</span>
+                  </div>
+                  <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-red-900 text-red-100 font-bold">
+                    {alert.hazardStatus || 'CRITICAL HAZARD'}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1 text-[11px]">
-                  <div className="p-2 rounded bg-black/60 border border-red-900/60">
-                    <span className="text-[10px] text-slate-400 block">Scenario</span>
-                    <span className="text-white font-bold">{alert.collisionType || 'Multi-Entity Hazard'}</span>
-                  </div>
-                  <div className="p-2 rounded bg-black/60 border border-red-900/60">
-                    <span className="text-[10px] text-slate-400 block">Time-To-Collision</span>
-                    <span className={cn(
-                      "font-bold",
-                      alert.timeToCollisionSec !== undefined && alert.timeToCollisionSec < 1.0 ? "text-red-400" : "text-amber-300"
-                    )}>
-                      {alert.timeToCollisionSec !== undefined ? `${alert.timeToCollisionSec}s` : '0.0s (Impact)'}
+                <div className="grid grid-cols-3 gap-2 pt-1 border-t border-red-900/40 text-center">
+                  <div className="p-1.5 rounded bg-black/40 border border-red-900/40">
+                    <span className="text-[10px] text-slate-400 block">Time To Collision (TTC)</span>
+                    <span className="text-red-400 font-bold">
+                      {alert.timeToCollisionSec !== undefined ? `${alert.timeToCollisionSec}s` : '0.28s'}
                     </span>
                   </div>
-                  <div className="p-2 rounded bg-black/60 border border-red-900/60">
-                    <span className="text-[10px] text-slate-400 block">Spatial Proximity</span>
-                    <span className="text-cyan-300 font-bold">
-                      {alert.proximityMeters !== undefined ? `${alert.proximityMeters}m` : '0.4m'}
+                  <div className="p-1.5 rounded bg-black/40 border border-red-900/40">
+                    <span className="text-[10px] text-slate-400 block">Proximity Distance</span>
+                    <span className="text-amber-300 font-bold">
+                      {alert.proximityMeters !== undefined ? `${alert.proximityMeters}m` : '1.4m'}
                     </span>
                   </div>
-                  <div className="p-2 rounded bg-black/60 border border-red-900/60">
+                  <div className="p-1.5 rounded bg-black/40 border border-red-900/40">
                     <span className="text-[10px] text-slate-400 block">Closure Speed</span>
                     <span className="text-amber-400 font-bold">
                       {alert.relativeClosureSpeedKmH !== undefined ? `${alert.relativeClosureSpeedKmH} km/h` : '62.4 km/h'}
@@ -216,7 +209,7 @@ export const AccidentDetailModal: React.FC<AccidentDetailModalProps> = ({ alert,
             {/* AI Explanation Callout */}
             <div className="p-3.5 rounded-xl bg-red-950/30 border border-red-500/40 text-xs">
               <div className="flex items-center gap-1.5 text-red-300 font-bold mb-1 font-mono">
-                <Sparkles className="w-3.5 h-3.5" /> AI Forensic Assessment:
+                <Sparkles className="w-3.5 h-3.5" /> AI Optical & Kinematic Forensic Assessment:
               </div>
               <p className="text-slate-200 leading-relaxed">
                 {alert.aiExplanation}
@@ -228,24 +221,29 @@ export const AccidentDetailModal: React.FC<AccidentDetailModalProps> = ({ alert,
               <span className="text-slate-400 font-bold mb-2 block">TEMPORAL LOG RECONSTRUCTION:</span>
               <div className="space-y-2 border-l border-slate-800 pl-3">
                 <div className="text-slate-300">
-                  <span className="text-cyan-400 font-bold">12:34:08 PM</span> - Vehicle A enters intersection on red signal (Speed: 54 km/h)
+                  <span className="text-cyan-400 font-bold">12:34:08 PM</span> - Target trajectory intersection detected on camera node (Speed: 54 km/h)
                 </div>
                 <div className="text-red-400 font-bold">
-                  <span>12:34:11 PM</span> - Lateral impact confirmed with Vehicle B. Airbag deployment signature detected.
+                  <span>12:34:11 PM</span> - Lateral impact confirmed with target vehicle. Airbag deployment optical signature detected.
                 </div>
                 <div className="text-slate-300">
-                  <span className="text-amber-400 font-bold">12:34:13 PM</span> - Computer Vision neural net flags incident with 97.4% confidence score.
+                  <span className="text-amber-400 font-bold">12:34:13 PM</span> - Computer Vision neural net logged incident with {alert.confidence}% confidence score.
                 </div>
-                {isDispatched && (
+                {isVerified && (
                   <div className="text-emerald-400 font-bold">
-                    <span>{alert.dispatchedAt || '12:35:00 PM'}</span> - Emergency Response dispatched by Operator.
+                    <span>{alert.verifiedAt || alert.timestamp}</span> - Incident detection verified and logged to surveillance security audit ledger.
+                  </div>
+                )}
+                {isFlagged && (
+                  <div className="text-amber-400 font-bold">
+                    <span>{alert.timestamp}</span> - Incident queued for priority forensic security audit.
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Right Col: Dispatch Actions & Units */}
+          {/* Right Col: Forensic Review & Audit Controls */}
           <div className="p-5 flex flex-col justify-between bg-[#0d1424] gap-4">
             <div className="space-y-4">
               {/* Confidence Score Pill */}
@@ -281,69 +279,101 @@ export const AccidentDetailModal: React.FC<AccidentDetailModalProps> = ({ alert,
                 })}
               </div>
 
-              {/* Dispatch Unit Selector */}
-              {!isDispatched ? (
-                <div className="space-y-2">
-                  <label className="text-xs font-mono text-slate-400 font-bold block">
-                    Select Response Package:
-                  </label>
-                  <select
-                    value={selectedUnit}
-                    onChange={(e) => setSelectedUnit(e.target.value)}
-                    className="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs font-mono focus:outline-none focus:border-red-500"
-                  >
-                    <option value="EMS Ambulance + Highway Patrol">EMS Ambulance + Highway Patrol (Code 3)</option>
-                    <option value="Full Emergency Response (Fire, EMS, Police)">Full Emergency Response (Fire, EMS, Police)</option>
-                    <option value="Traffic Diversion & Tow Squad">Traffic Diversion & Tow Squad</option>
-                  </select>
-                </div>
-              ) : (
-                /* Dispatched Status Badge */
+              {/* Security Audit Status Card */}
+              {isVerified ? (
                 <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/50 text-emerald-200 space-y-2">
                   <div className="flex items-center gap-2 font-bold text-sm font-mono text-emerald-400">
                     <CheckCircle className="w-5 h-5 text-emerald-400" />
-                    EMERGENCY TEAM DISPATCHED
+                    SECURITY AUDIT VERIFIED
                   </div>
                   <div className="text-xs font-mono space-y-1 text-slate-300">
-                    <div>Units: {alert.dispatchedUnits?.join(', ')}</div>
-                    <div>Dispatched At: {alert.dispatchedAt}</div>
-                    <div className="text-amber-300 font-bold">Estimated Arrival: 4 mins (GPS Tracking Active)</div>
+                    <div>Audited By: {alert.verifiedBy || 'Surveillance Operator #402'}</div>
+                    <div>Audit Logged: {alert.verifiedAt || alert.timestamp}</div>
+                    <div className="text-cyan-300 font-bold">Audit Hash: SHA256:{alert.id.replace('INC-', '')}-SURV-OK</div>
                   </div>
+                </div>
+              ) : isFlagged ? (
+                <div className="p-4 rounded-xl bg-amber-950/40 border border-amber-500/50 text-amber-200 space-y-2">
+                  <div className="flex items-center gap-2 font-bold text-sm font-mono text-amber-400">
+                    <AlertTriangle className="w-5 h-5 text-amber-400" />
+                    QUEUED FOR SECURITY AUDIT
+                  </div>
+                  <p className="text-xs font-mono text-slate-300">
+                    Flagged for forensic investigation, optical telemetry review, and multi-camera corroboration.
+                  </p>
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-300 space-y-2">
+                  <div className="flex items-center gap-2 font-bold text-sm font-mono text-amber-400">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                    PENDING OPERATOR VERIFICATION
+                  </div>
+                  <p className="text-xs font-mono text-slate-400">
+                    Optical sensor incident logged by neural detector. Awaiting operator forensic review and confirmation.
+                  </p>
                 </div>
               )}
             </div>
 
-            {/* Bottom Actions */}
+            {/* Surveillance Workflow Actions */}
             <div className="space-y-2 pt-2 border-t border-slate-800">
-              {!isDispatched ? (
+              {!isVerified ? (
                 <button
                   type="button"
-                  disabled={isDispatching}
-                  onClick={handleDispatch}
-                  className="w-full py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-mono font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg glow-red"
+                  disabled={isVerifying}
+                  onClick={handleVerify}
+                  className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-950"
+                  title="Acknowledge and verify incident in security ledger"
                 >
-                  <Siren className={cn("w-4 h-4", isDispatching && "animate-spin")} />
-                  {isDispatching ? 'Transmitting Dispatch Signal...' : 'Dispatch Emergency Team'}
+                  <CheckCircle className={cn("w-4 h-4", isVerifying && "animate-spin")} />
+                  {isVerifying ? 'Logging Verification...' : 'Acknowledge Incident Detection'}
                 </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono text-xs transition-colors"
-                >
-                  Return to Dashboard
-                </button>
+                <div className="p-2 rounded-xl bg-emerald-950/30 border border-emerald-500/40 text-emerald-400 font-mono text-xs text-center flex items-center justify-center gap-1.5 font-bold">
+                  <CheckCircle2 className="w-4 h-4" /> Incident Acknowledged & Logged
+                </div>
               )}
 
-              {!alert.acknowledged && !isDispatched && (
-                <button
-                  type="button"
-                  onClick={() => acknowledgeAlert(alert.id)}
-                  className="w-full py-2 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition-colors"
-                >
-                  Acknowledge Without Dispatch
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleInspectFeed}
+                className="w-full py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 font-mono text-xs flex items-center justify-center gap-2 transition-colors border border-slate-700"
+                title="Inspect CCTV Feed"
+              >
+                <Camera className="w-4 h-4" /> Inspect CCTV Feed
+              </button>
+
+              <button
+                type="button"
+                disabled={isFlagged}
+                onClick={() => flagForSecurityAudit(alert.id)}
+                className={cn(
+                  "w-full py-2 px-3 rounded-lg font-mono text-xs flex items-center justify-center gap-2 transition-colors border",
+                  isFlagged
+                    ? "bg-amber-950/40 border-amber-600/50 text-amber-300 cursor-default"
+                    : "bg-slate-800 hover:bg-amber-950/40 text-amber-300 border-slate-700 hover:border-amber-700"
+                )}
+                title="Flag for Security Audit"
+              >
+                <FileText className="w-4 h-4" /> {isFlagged ? 'Flagged for Security Audit' : 'Flag for Security Audit'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => exportForensicReport(alert.id)}
+                className="w-full py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs flex items-center justify-center gap-2 transition-colors border border-slate-700"
+                title="Export Forensic Report"
+              >
+                <Download className="w-4 h-4" /> Export Forensic Report
+              </button>
+
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full py-2 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white font-mono text-xs transition-colors"
+              >
+                Close Forensic View
+              </button>
             </div>
           </div>
         </div>

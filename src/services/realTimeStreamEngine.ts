@@ -15,7 +15,7 @@ import {
   REAL_SENTINEL_CONFIRMED_INCIDENTS, 
   REAL_OVERSPEED_INCIDENTS, 
   REAL_TGCN_TEMPORAL_INTERVALS,
-  RealStreamIncident
+  type RealStreamIncident
 } from '../data/realIncidentFeed.ts';
 import { REAL_TOTAL_VEHICLES_TODAY } from '../data/realDataset.ts';
 
@@ -287,9 +287,7 @@ export class RealTimeStreamEngine {
       snapshotBg: rawIncident.type === 'Traffic Accident' ? 'accident' : rawIncident.type === 'Wrong-Way Vehicle' ? 'wrongway' : 'speed',
       imageUrl: rawIncident.imageUrl || '/incidents/accident_detection.jpg',
       videoUrl: rawIncident.videoUrl || '/videos/cam_ai_stream.mov',
-      dispatchedStatus: 'none',
-      dispatchedUnits: rawIncident.suggestedUnits,
-      etaMinutes: rawIncident.etaMinutes,
+      auditStatus: 'pending',
       collisionType: rawIncident.collisionType,
       proximityMeters: rawIncident.proximityMeters,
       relativeClosureSpeedKmH: rawIncident.relativeClosureSpeedKmH,

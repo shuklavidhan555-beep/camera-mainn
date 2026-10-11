@@ -60,7 +60,9 @@ interface CommandCenterContextType {
 
   // Actions
   acknowledgeAlert: (alertId: string) => void;
-  dispatchEmergencyTeam: (alertId: string, unitType: string) => void;
+  verifyIncidentDetection: (alertId: string) => void;
+  flagForSecurityAudit: (alertId: string) => void;
+  exportForensicReport: (alertId: string) => void;
   rebootCamera: (cameraId: string) => void;
   triggerSimulatedAlert: () => void;
   createDynamicSafetyAlert: (
@@ -84,6 +86,8 @@ interface CommandCenterContextType {
   setSoundEnabled: (enabled: boolean) => void;
   emergencyBannerOpen: boolean;
   setEmergencyBannerOpen: (open: boolean) => void;
+  surveillanceBannerOpen: boolean;
+  setSurveillanceBannerOpen: (open: boolean) => void;
   toasts: ToastMessage[];
   dismissToast: (id: string) => void;
   showToast: (title: string, message: string, type?: ToastMessage['type']) => void;
@@ -297,15 +301,22 @@ export const CommandCenterProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const acknowledgeAlert = (alertId: string) => {
+    const timeNow = new Intl.DateTimeFormat('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    }).format(new Date());
+
     setSafetyAlerts((prev) =>
       prev.map((alert) =>
-        alert.id === alertId ? { ...alert, acknowledged: true } : alert
+        alert.id === alertId ? { ...alert, acknowledged: true, auditStatus: 'verified', verifiedAt: timeNow } : alert
       )
     );
-    showToast('Alert Acknowledged', `Incident ${alertId} logged as reviewed by Operator.`, 'success');
+    showToast('Alert Acknowledged', `Incident ${alertId} logged as verified by Surveillance Operator.`, 'success');
   };
 
-  const dispatchEmergencyTeam = (alertId: string, unitType: string) => {
+  const verifyIncidentDetection = (alertId: string) => {
     const timeNow = new Intl.DateTimeFormat('en-US', {
       hour: '2-digit',
       minute: '2-digit',
@@ -319,10 +330,9 @@ export const CommandCenterProvider: React.FC<{ children: React.ReactNode }> = ({
           const updated: SafetyAlert = {
             ...alert,
             acknowledged: true,
-            dispatchedStatus: 'dispatched',
-            dispatchedUnits: [unitType, 'Sentinel Unit PAT-01'],
-            dispatchedAt: timeNow,
-            etaMinutes: 3,
+            auditStatus: 'verified',
+            verifiedAt: timeNow,
+            verifiedBy: 'Surveillance Operator #402',
           };
           if (selectedAlertForModal?.id === alertId) {
             setSelectedAlertForModal(updated);
@@ -333,9 +343,42 @@ export const CommandCenterProvider: React.FC<{ children: React.ReactNode }> = ({
       })
     );
     showToast(
-      '🚨 Emergency Dispatched',
-      `${unitType} and Rapid Response team deployed to ${alertId}. Estimated arrival: 3 mins.`,
-      'critical'
+      'Incident Verified',
+      `Optical detection for ${alertId} verified and logged to surveillance security audit ledger.`,
+      'success'
+    );
+  };
+
+  const flagForSecurityAudit = (alertId: string) => {
+    setSafetyAlerts((prev) =>
+      prev.map((alert) => {
+        if (alert.id === alertId) {
+          const updated: SafetyAlert = {
+            ...alert,
+            auditStatus: 'flagged'
+          };
+          if (selectedAlertForModal?.id === alertId) {
+            setSelectedAlertForModal(updated);
+          }
+          return updated;
+        }
+        return alert;
+      })
+    );
+    showToast(
+      'Flagged for Audit',
+      `Incident ${alertId} flagged for security audit and forensic compliance review.`,
+      'warning'
+    );
+  };
+
+  const exportForensicReport = (alertId: string) => {
+    const alert = safetyAlerts.find((a) => a.id === alertId);
+    if (!alert) return;
+    showToast(
+      'Forensic Report Exported',
+      `Cryptographic forensic dossier for ${alertId} (${alert.cameraId}) generated and logged to audit archive.`,
+      'info'
     );
   };
 
@@ -426,7 +469,7 @@ export const CommandCenterProvider: React.FC<{ children: React.ReactNode }> = ({
       snapshotBg: 'accident',
       imageUrl: snapshotImage || camera.imageUrl || '/incidents/accident_detection.jpg',
       videoUrl: camera.videoUrl || '/videos/cam_highway_collision.mp4',
-      dispatchedStatus: 'none',
+      auditStatus: 'pending',
       collisionType: colType,
       timeToCollisionSec: interaction.timeToCollisionSec ?? undefined,
       proximityMeters: interaction.proximityMeters,
@@ -474,7 +517,9 @@ export const CommandCenterProvider: React.FC<{ children: React.ReactNode }> = ({
         selectedAlertForModal,
         setSelectedAlertForModal,
         acknowledgeAlert,
-        dispatchEmergencyTeam,
+        verifyIncidentDetection,
+        flagForSecurityAudit,
+        exportForensicReport,
         rebootCamera,
         triggerSimulatedAlert,
         createDynamicSafetyAlert,
@@ -488,6 +533,8 @@ export const CommandCenterProvider: React.FC<{ children: React.ReactNode }> = ({
         setSoundEnabled,
         emergencyBannerOpen,
         setEmergencyBannerOpen,
+        surveillanceBannerOpen: emergencyBannerOpen,
+        setSurveillanceBannerOpen: setEmergencyBannerOpen,
         toasts,
         dismissToast,
         showToast,

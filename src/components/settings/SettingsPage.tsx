@@ -10,7 +10,7 @@ import {
   Cpu, 
   Bell, 
   Save, 
-  Siren, 
+  ShieldAlert, 
   Zap,
   Sparkles
 } from 'lucide-react';
@@ -246,7 +246,7 @@ export const SettingsPage: React.FC = () => {
                 Control Room Sound Synthesis
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Play subtle audio chime on alert confirmation and emergency dispatch
+                Play subtle audio chime on alert confirmation and critical hazard detection
               </p>
             </div>
             <div className={cn(
@@ -266,8 +266,8 @@ export const SettingsPage: React.FC = () => {
           >
             <div>
               <div className="text-white font-mono font-bold flex items-center gap-2">
-                <Siren className="w-4 h-4 text-red-400" />
-                Emergency Top Alert Banner
+                <ShieldAlert className="w-4 h-4 text-red-400" />
+                Critical Surveillance Alert Banner
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
                 Show persistent header warning when Priority 1 incidents are unresolved

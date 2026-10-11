@@ -159,6 +159,7 @@ test('ModelInferenceService Live Inference & Real Forward Pass', async (t) => {
     assert.equal(res.severity, 'Critical');
     assert.ok(res.confidence > 80, `Expected high confidence, got ${res.confidence}`);
     assert.ok(res.recommendedDispatch.includes('Ambulance'));
+    assert.ok(res.surveillanceAction.includes('Forensic Snapshot & PTZ Tracking'));
 
     // Check softmax probabilities sum to 100%
     const sumProbs = res.classProbabilities.reduce((acc, c) => acc + c.probability, 0);
@@ -187,6 +188,7 @@ test('ModelInferenceService Live Inference & Real Forward Pass', async (t) => {
     assert.equal(res.predictedClass, 'Wrong-Way Anomaly');
     assert.equal(res.severity, 'Critical');
     assert.ok(res.recommendedDispatch.includes('Interceptor'));
+    assert.ok(res.surveillanceAction.includes('Optical Track Lock'));
   });
 
   await t.test('Incident classification: Normal cruise flow via true Softmax forward pass', () => {

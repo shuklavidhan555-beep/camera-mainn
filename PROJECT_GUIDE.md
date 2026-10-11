@@ -12,7 +12,7 @@ The application runs live locally at: `http://localhost:5173/`
 - **Styling & HUD Design**: Tailwind CSS with custom command-center color palettes (charcoal `#0a0d14`, slate `#161f33`, cyan `#06b6d4`, warning amber `#f59e0b`, critical red `#ef4444`, and stark black & white monochrome)
 - **Icons**: Lucide React (`lucide-react`)
 - **Data Visualizations**: Recharts (`recharts`)
-- **Audio Synthesizer**: Web Audio API oscillator for authentic control-room chime/beeps on alert acknowledgment and emergency team dispatches
+- **Audio Synthesizer**: Web Audio API oscillator for authentic control-room chime/beeps on alert acknowledgment and critical hazard detections
 - **State & Telemetry Engine**: React Context (`CommandCenterContext`) with live ticker simulations, timecode clock, and instant global search
 
 ---
@@ -20,7 +20,7 @@ The application runs live locally at: `http://localhost:5173/`
 ## 🚀 Key Pages & Features
 
 ### 1. Overview Dashboard
-- **Top Emergency Warning Banner**: Persistent, dismissable alert bar for critical incidents with 1-click incident review and dispatch.
+- **Top Surveillance Warning Banner**: Persistent, dismissable monitor bar for critical incidents with 1-click CCTV inspection and forensic review.
 - **Top Command Bar**: 
   - City branding `SmartCity Command Center` (Sector 01)
   - Live second-by-second updating digital clock
@@ -83,20 +83,20 @@ The application runs live locally at: `http://localhost:5173/`
 
 ---
 
-### 4. Public Safety Alerts & Emergency Dispatch
-- Multi-tier severity tabs: All, Critical (2), High (2), Medium (2), and Acknowledged
+### 4. Public Safety & Surveillance Incident Log
+- Multi-tier severity tabs: All, Critical, High, Medium, and Acknowledged
 - Filter pills by violation category:
   - Traffic Accident
   - Wrong-Way Vehicle
   - Overspeeding
   - Pedestrian in Restricted Area
   - Illegal Parking
-- "Trigger Simulated Incident" button to demonstrate real-time alert ingestion and sound cues
-- **Accident Detail Modal & Emergency Dispatch**:
-  - High-priority collision evidence frame with detected vehicles & collision blast point
+- "Trigger Simulated Incident" and kinematic collision hazard streaming buttons
+- **Accident Detail Modal & Forensic Investigation**:
+  - High-priority collision evidence frame with detected vehicles & collision trajectory vectors
   - AI Forensic Assessment summary & temporal reconstruction timeline
-  - Response Package Selector: EMS Ambulance, Highway Patrol, Fire & Rescue, Traffic Diversion
-  - **"Dispatch Emergency Team"** action: Updates status to `DISPATCHED - Units en route (ETA 4 mins)` with control room audio cues
+  - Evidence source switching between live video stream and synchronized forensic snapshot
+  - **Surveillance Actions**: "Acknowledge Incident Detection", "Inspect CCTV Feed", "Flag for Security Audit", and "Export Forensic Report"
 
 ---
 
@@ -131,8 +131,8 @@ The application runs live locally at: `http://localhost:5173/`
 2. **Overview**: Point out the 4 KPI cards and explain how the system detected 18,420 vehicles today with 92.3% active camera uptime.
 3. **Interactive Map**: Demonstrate the vector GIS map. Toggle layers (Cameras, Heatmap, Incidents). Hover over Grand Ave pin to show the incident tooltip.
 4. **Live CCTV Feeds**: Point out the 2×2 grid showing live simulated feeds with animated bounding boxes, confidence %, and license plate OCR. Click the Night Vision toggle or Snapshot button.
-5. **Emergency Incident Workflow**: 
-   - Click "Inspect & Dispatch" on the Grand Ave collision card in the Priority Alerts panel.
-   - Walk through the Accident Detail Modal: collision blast point, involved vehicles, forensic assessment, and timeline.
-   - Click **"Dispatch Emergency Team"** to show instant status change to dispatched units with 4 min ETA.
+5. **Surveillance Incident & Forensic Workflow**: 
+   - Click "Forensic Review" on the incident card in the Priority Alerts panel.
+   - Walk through the Accident Detail Modal: multi-entity collision vectors, involved vehicles, forensic AI assessment, and video evidence replay.
+   - Click **"Acknowledge Incident Detection"** to verify the incident in the security audit ledger, or click **"Inspect CCTV Feed"** to jump into live camera tracking.
 6. **Themes**: Open the theme switcher in the TopBar to switch between **Dark Command** and **Pure Monochrome Black & White** to show adaptability for different operator environments.

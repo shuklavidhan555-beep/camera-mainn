@@ -599,7 +599,7 @@ export const TrafficAnalyticsPage: React.FC = () => {
                 <span className="text-[10px] text-slate-400">MLP Softmax Head</span>
               </div>
               <div className="text-[10px] text-slate-400">
-                Dispatch Protocol: <span className="text-cyan-300 font-semibold">{activeRiskPrediction.recommendedDispatch}</span>
+                Surveillance Action Protocol: <span className="text-cyan-300 font-semibold">{activeRiskPrediction.surveillanceAction || activeRiskPrediction.recommendedDispatch}</span>
               </div>
 
               {/* Real Probability Bars across all classes */}

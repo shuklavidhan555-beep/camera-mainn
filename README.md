@@ -8,7 +8,7 @@ Real-time AI-powered urban surveillance, traffic analytics, and public safety co
 - **Multi-Entity Collision Detection** — Vehicle↔Vehicle, Vehicle↔Pedestrian, Vehicle↔Animal accident & near-miss detection with Time-To-Collision (TTC) computation
 - **Traffic Analytics** — Hourly volume/speed curves, zone congestion heatmaps, vehicle classification breakdown
 - **Neural Inference Engine** — Trained T-GCN traffic speed predictor and CrashSense 5-class incident risk classifier running real-time Softmax forward passes
-- **Public Safety Alerts** — Incident logging with forensic snapshots, severity classification, and emergency dispatch protocols
+- **Public Safety Alerts** — Incident logging with forensic snapshots, severity classification, CCTV feed inspection, and security audit acknowledgment
 - **Reports & Export** — Date-range analytics with CSV/PDF telemetry export
 
 ## Tech Stack

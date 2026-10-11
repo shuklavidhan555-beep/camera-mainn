@@ -4,14 +4,14 @@ import { AlertSeverity } from '../../types';
 import { 
   ShieldAlert, 
   CheckCircle2, 
-  Flame, 
   Clock, 
   MapPin, 
   Camera, 
   Search, 
-  Siren,
+  FileText,
   Car,
-  AlertTriangle
+  AlertTriangle,
+  Activity
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { RealTimeStreamControlBar } from '../common/RealTimeStreamControlBar';
@@ -85,7 +85,7 @@ export const SafetyAlertsPage: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              Autonomous computer vision violation detection and real-time emergency dispatch nexus
+              Autonomous optical video detection, real-time object tracking, and forensic surveillance incident verification
             </p>
           </div>
         </div>
@@ -118,7 +118,7 @@ export const SafetyAlertsPage: React.FC = () => {
             className="px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-mono text-[11px] flex items-center gap-1 transition-colors"
             title="Stream next telemetry violation event"
           >
-            <Siren className="w-3.5 h-3.5 text-cyan-400" /> Telemetry Event
+            <Activity className="w-3.5 h-3.5 text-cyan-400" /> Telemetry Event
           </button>
         </div>
       </div>
@@ -237,7 +237,8 @@ export const SafetyAlertsPage: React.FC = () => {
           filteredAlerts.map((alert) => {
             const isCritical = alert.severity === 'Critical';
             const isHigh = alert.severity === 'High';
-            const isDispatched = alert.dispatchedStatus === 'dispatched';
+            const isVerified = alert.acknowledged || alert.auditStatus === 'verified';
+            const isFlagged = alert.auditStatus === 'flagged';
 
             return (
               <div
@@ -345,16 +346,26 @@ export const SafetyAlertsPage: React.FC = () => {
                     <span className="text-slate-500">{alert.timestamp}</span>
                   </div>
 
-                  {/* Dispatched state notification */}
-                  {isDispatched && (
+                  {/* Surveillance verification state badge */}
+                  {isVerified ? (
                     <div className="mt-2.5 p-2 rounded-lg bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-[11px] font-mono flex items-center gap-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      Units En Route: {alert.dispatchedUnits?.[0]} (ETA: 4 mins)
+                      Surveillance Audit Verified • Incident Logged
+                    </div>
+                  ) : isFlagged ? (
+                    <div className="mt-2.5 p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 text-amber-300 text-[11px] font-mono flex items-center gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                      Flagged for Security Audit Review
+                    </div>
+                  ) : (
+                    <div className="mt-2.5 p-2 rounded-lg bg-slate-900/60 border border-slate-800 text-slate-400 text-[11px] font-mono flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                      Awaiting Surveillance Verification
                     </div>
                   )}
                 </div>
 
-                {/* Actions Bar */}
+                {/* Actions Bar - Pure Surveillance Workflows */}
                 <div className="mt-4 pt-3 border-t border-slate-800 flex items-center gap-2">
                   <button
                     type="button"
@@ -363,8 +374,9 @@ export const SafetyAlertsPage: React.FC = () => {
                       if (cam) setSelectedCamera(cam);
                     }}
                     className="flex-1 py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 font-mono text-xs flex items-center justify-center gap-1.5 border border-slate-700 transition-colors"
+                    title="Inspect CCTV Feed"
                   >
-                    <Camera className="w-3.5 h-3.5" /> View Feed
+                    <Camera className="w-3.5 h-3.5" /> Inspect Feed
                   </button>
 
                   <button
@@ -376,18 +388,19 @@ export const SafetyAlertsPage: React.FC = () => {
                         ? "bg-red-600 hover:bg-red-500 text-white"
                         : "bg-cyan-600 hover:bg-cyan-500 text-white"
                     )}
+                    title="Review Forensic Snapshot"
                   >
-                    <Flame className="w-3.5 h-3.5" /> Incident Details
+                    <FileText className="w-3.5 h-3.5" /> Forensic Review
                   </button>
 
-                  {!alert.acknowledged && (
+                  {!isVerified && (
                     <button
                       type="button"
                       onClick={() => acknowledgeAlert(alert.id)}
                       className="py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-emerald-900/50 hover:text-emerald-300 text-slate-300 font-mono text-xs transition-colors border border-slate-700"
-                      title="Acknowledge alert without dispatch"
+                      title="Acknowledge Incident Detection"
                     >
-                      Acknowledge
+                      Verify
                     </button>
                   )}
                 </div>

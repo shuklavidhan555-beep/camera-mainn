@@ -270,8 +270,8 @@ Signatures: Chief Traffic Operator, Sector 01 Command
           During the current {periodLabel} reporting cycle across {cameras.length} Caltrans PeMS registered optical nodes,
           vehicular flow maintained an average {reportData.avgFlowEfficiency}% throughput efficiency index with 
           {reportData.totalIncidents} flagged incident anomalies. Automated license plate optical character recognition (OCR) 
-          and YOLOv8 Edge Vision models achieved 98.9% precision. Emergency dispatch latency averaged 3.2 minutes 
-          from algorithmic anomaly confirmation to first responder deployment.
+          and YOLOv8 Edge Vision models achieved 98.9% precision. Automated surveillance incident verification averaged 3.2 seconds 
+          from optical anomaly confirmation to security audit logging.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-[11px] border-t border-slate-800">
           <div><span className="text-slate-500">Signatures:</span> <span className="text-white">Chief Traffic Operator</span></div>

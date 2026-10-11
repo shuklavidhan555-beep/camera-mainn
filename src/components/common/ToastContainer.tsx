@@ -1,6 +1,6 @@
 import React from 'react';
 import { useCommandCenter } from '../../context/CommandCenterContext';
-import { CheckCircle2, AlertTriangle, Info, Siren, X } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Info, ShieldAlert, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export const ToastContainer: React.FC = () => {
@@ -31,7 +31,7 @@ export const ToastContainer: React.FC = () => {
           >
             <div className="mt-0.5">
               {isCritical ? (
-                <Siren className="w-4 h-4 text-red-400 animate-pulse" />
+                <ShieldAlert className="w-4 h-4 text-red-400 animate-pulse" />
               ) : isSuccess ? (
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               ) : isWarning ? (

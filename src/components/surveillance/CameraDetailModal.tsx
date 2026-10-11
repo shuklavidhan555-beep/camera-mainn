@@ -10,7 +10,10 @@ import {
   TrendingUp,
   AlertTriangle,
   Video,
-  Zap
+  Zap,
+  Camera,
+  FileDown,
+  Activity
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCommandCenter } from '../../context/CommandCenterContext';
@@ -22,8 +25,23 @@ interface CameraDetailModalProps {
 }
 
 export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, onClose }) => {
-  const { rebootCamera, createDynamicSafetyAlert, setSelectedAlertForModal } = useCommandCenter();
+  const { rebootCamera, createDynamicSafetyAlert, setSelectedAlertForModal, showToast } = useCommandCenter();
   const [activeTab, setActiveTab] = useState<'detections' | 'telemetry' | 'events'>('detections');
+
+  const handleInspectStream = () => {
+    if (!camera) return;
+    showToast('CCTV Stream Active', `Direct RTSP optical stream locked on camera ${camera.id}.`, 'info');
+  };
+
+  const handleReviewHazardMetrics = () => {
+    setActiveTab('telemetry');
+    showToast('Hazard Metrics Active', `Loaded neural kinematic vector metrics and multi-entity collision telemetry.`, 'info');
+  };
+
+  const handleExportForensicFrame = () => {
+    if (!camera) return;
+    showToast('Forensic Frame Exported', `Forensic frame snapshot from ${camera.id} exported to security audit archive.`, 'success');
+  };
 
   if (!camera) return null;
 
@@ -203,6 +221,34 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                           </div>
                         </div>
                       ))}
+
+                      {/* Surveillance Radar Actions */}
+                      <div className="flex items-center gap-1.5 pt-1.5 border-t border-red-900/60">
+                        <button
+                          type="button"
+                          onClick={handleInspectStream}
+                          className="flex-1 py-1 px-2 rounded bg-black/60 hover:bg-black/90 text-cyan-300 text-[10px] font-mono flex items-center justify-center gap-1 border border-slate-800 transition-colors"
+                          title="Inspect Camera Stream"
+                        >
+                          <Camera className="w-3 h-3" /> Inspect Stream
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleReviewHazardMetrics}
+                          className="flex-1 py-1 px-2 rounded bg-black/60 hover:bg-black/90 text-amber-300 text-[10px] font-mono flex items-center justify-center gap-1 border border-slate-800 transition-colors"
+                          title="Review Hazard Metrics"
+                        >
+                          <Activity className="w-3 h-3" /> Hazard Metrics
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleExportForensicFrame}
+                          className="flex-1 py-1 px-2 rounded bg-black/60 hover:bg-black/90 text-slate-300 text-[10px] font-mono flex items-center justify-center gap-1 border border-slate-800 transition-colors"
+                          title="Export Forensic Frame"
+                        >
+                          <FileDown className="w-3 h-3" /> Export Frame
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -352,6 +398,34 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
 
               return (
                 <div className="space-y-3 flex-1 overflow-y-auto pr-1 text-xs font-mono">
+                  {/* Surveillance Workflow Action Bar */}
+                  <div className="p-2 rounded-lg bg-slate-900/90 border border-slate-800 flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={handleInspectStream}
+                      className="flex-1 py-1.5 px-2 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 text-[10px] flex items-center justify-center gap-1 border border-slate-700 transition-colors"
+                      title="Inspect Camera Stream"
+                    >
+                      <Camera className="w-3 h-3" /> Inspect Stream
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleReviewHazardMetrics}
+                      className="flex-1 py-1.5 px-2 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] flex items-center justify-center gap-1 border border-slate-700 transition-colors"
+                      title="Review Hazard Metrics"
+                    >
+                      <Activity className="w-3 h-3" /> Hazard Metrics
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleExportForensicFrame}
+                      className="flex-1 py-1.5 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] flex items-center justify-center gap-1 border border-slate-700 transition-colors"
+                      title="Export Forensic Frame"
+                    >
+                      <FileDown className="w-3 h-3" /> Export Frame
+                    </button>
+                  </div>
+
                   {/* Kinematic Collision & Multi-Entity Interaction Radar */}
                   <div className="p-3 bg-slate-900/80 rounded-lg border border-red-800/60 shadow">
                     <div className="text-red-400 font-bold mb-1 flex items-center justify-between">
@@ -435,7 +509,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                         ))}
                       </div>
                       <div className="text-[10px] text-slate-400 pt-1">
-                        Dispatch Protocol: <span className="text-cyan-300">{kinematicInference.recommendedProtocol}</span>
+                        Surveillance Action Protocol: <span className="text-cyan-300">{kinematicInference.surveillanceProtocol || kinematicInference.recommendedProtocol}</span>
                       </div>
                     </div>
 
@@ -538,7 +612,7 @@ export const CameraDetailModal: React.FC<CameraDetailModalProps> = ({ camera, on
                       Target: {riskAssessment.predictedClass} ({riskAssessment.confidence}%)
                     </div>
                     <p className="text-[10px] text-slate-400 mt-0.5">
-                      Recommended: {riskAssessment.recommendedDispatch}
+                      Surveillance Action: {riskAssessment.surveillanceAction || riskAssessment.recommendedDispatch}
                     </p>
                   </div>
 

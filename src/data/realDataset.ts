@@ -4,7 +4,7 @@
 // 2. T-GCN Shenzhen Urban Traffic Speed Matrix - 2,976 intervals across 156 sensor links
 // 3. AI-Powered Vehicle Tracking (YOLOv8 + ByteTrack) - 23,801 vehicle detections
 // 4. Minipro Urban Vehicle Bounding Box Dataset - 75 Pascal VOC XML annotations
-// 5. Accident Detection & Sentinel Dispatch Engine
+// 5. Accident Detection & Optical Surveillance Incident Engine
 // 6. AI Video 4K Surveillance Feed (input-001-001.MOV from ai video.zip)
 
 import type { 
@@ -4285,7 +4285,7 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
     "snapshotBg": "accident",
     "imageUrl": "/incidents/accident_detection.jpg",
     "videoUrl": "/videos/cam_ai_stream.mov",
-    "dispatchedStatus": "none"
+    "auditStatus": "pending"
   },
   {
     "id": "INC-PED-02",
@@ -4316,7 +4316,7 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
     "snapshotBg": "pedestrian",
     "imageUrl": "/incidents/auto_two_wheeler.jpg",
     "videoUrl": "/videos/cam_corridor_flow.mp4",
-    "dispatchedStatus": "none"
+    "auditStatus": "pending"
   },
   {
     "id": "INC-ANIM-01",
@@ -4337,7 +4337,7 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
     "cameraName": "Caltrans Fwy 605 Northbound Node",
     "timestamp": "12:15:30 PM",
     "timeAgo": "19m ago",
-    "aiExplanation": "Kinematic tracking detected wildlife animal roadway intrusion in outer traffic lane with approaching vehicle closure. Pre-collision warning dispatched.",
+    "aiExplanation": "Kinematic tracking detected wildlife animal roadway intrusion in outer traffic lane with approaching vehicle closure. Automated hazard alert logged.",
     "confidence": 94.6,
     "acknowledged": false,
     "vehiclesInvolved": [
@@ -4347,7 +4347,7 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
     "snapshotBg": "animal",
     "imageUrl": "/incidents/testing1.jpg",
     "videoUrl": "/videos/cam_expressway_wild.mp4",
-    "dispatchedStatus": "none"
+    "auditStatus": "pending"
   },
   {
     "id": "ALT-2040",
@@ -4368,7 +4368,7 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
     "snapshotBg": "wrongway",
     "imageUrl": "/incidents/testing1.jpg",
     "videoUrl": "/videos/cam_traffic_zone.mp4",
-    "dispatchedStatus": "none"
+    "auditStatus": "pending"
   },
   {
     "id": "ALT-2038",
@@ -4387,7 +4387,7 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
       "Commercial Vehicle (CA-990-DX)"
     ],
     "snapshotBg": "speed",
-    "dispatchedStatus": "none"
+    "auditStatus": "pending"
   },
   {
     "id": "ALT-2035",
@@ -4407,7 +4407,7 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
     ],
     "snapshotBg": "parking",
     "imageUrl": "/incidents/illegal_parking_truck.jpg",
-    "dispatchedStatus": "none"
+    "auditStatus": "pending"
   },
   {
     "id": "ALT-2031",
@@ -4428,12 +4428,9 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
     ],
     "snapshotBg": "traffic",
     "imageUrl": "/incidents/bus_congestion.jpg",
-    "dispatchedStatus": "dispatched",
-    "dispatchedUnits": [
-      "Sentinel Patrol PAT-01"
-    ],
-    "dispatchedAt": "11:58:30 AM",
-    "etaMinutes": 2
+    "auditStatus": "verified",
+    "verifiedAt": "11:58:30 AM",
+    "verifiedBy": "Surveillance Operator #402"
   },
   {
     "id": "INC-27FF50",
@@ -4454,12 +4451,9 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
     ],
     "snapshotBg": "pedestrian",
     "imageUrl": "/incidents/auto_two_wheeler.jpg",
-    "dispatchedStatus": "dispatched",
-    "dispatchedUnits": [
-      "Sentinel Patrol PAT-01"
-    ],
-    "dispatchedAt": "11:44:00 AM",
-    "etaMinutes": 1
+    "auditStatus": "verified",
+    "verifiedAt": "11:44:00 AM",
+    "verifiedBy": "Surveillance Operator #402"
   },
   {
     "id": "INC-034D0A",
@@ -4481,13 +4475,9 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
     "snapshotBg": "accident",
     "imageUrl": "/incidents/accident_detection.jpg",
     "videoUrl": "/videos/cam_intersection_incident.mp4",
-    "dispatchedStatus": "dispatched",
-    "dispatchedUnits": [
-      "Ambulance AMB-02",
-      "Highway Patrol"
-    ],
-    "dispatchedAt": "11:18:00 AM",
-    "etaMinutes": 0
+    "auditStatus": "verified",
+    "verifiedAt": "11:18:00 AM",
+    "verifiedBy": "Surveillance Operator #402"
   },
   {
     "id": "INC-8EE2CB",
@@ -4506,7 +4496,7 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
       "Pedestrian (P-104)"
     ],
     "snapshotBg": "pedestrian",
-    "dispatchedStatus": "none"
+    "auditStatus": "pending"
   },
   {
     "id": "INC-EEAC4A",
@@ -4527,13 +4517,9 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
     ],
     "snapshotBg": "accident",
     "videoUrl": "/videos/cam_highway_collision.mp4",
-    "dispatchedStatus": "dispatched",
-    "dispatchedUnits": [
-      "Sentinel Patrol PAT-02",
-      "Tow Squad"
-    ],
-    "dispatchedAt": "10:15:30 AM",
-    "etaMinutes": 0
+    "auditStatus": "verified",
+    "verifiedAt": "10:15:30 AM",
+    "verifiedBy": "Surveillance Operator #402"
   },
   {
     "id": "ALT-2022",
@@ -4552,7 +4538,7 @@ export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
       "Sedan (CA-411-ZZ)"
     ],
     "snapshotBg": "speed",
-    "dispatchedStatus": "none"
+    "auditStatus": "pending"
   }
 ];
 

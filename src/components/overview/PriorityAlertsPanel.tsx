@@ -140,8 +140,9 @@ export const PriorityAlertsPanel: React.FC = () => {
                     type="button"
                     onClick={() => handleInspectIncident(alert)}
                     className="flex-1 py-1 px-2 rounded bg-red-600 hover:bg-red-500 text-white font-mono text-[11px] flex items-center justify-center gap-1 transition-colors font-medium shadow-sm"
+                    title="Review Forensic Snapshot"
                   >
-                    <Flame className="w-3 h-3" /> Inspect & Dispatch
+                    <Flame className="w-3 h-3" /> Forensic Review
                   </button>
                 ) : (
                   <button
