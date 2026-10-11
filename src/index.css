@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-primary: #0a0d14;
+    --bg-secondary: #111726;
+    --bg-panel: #161f33;
+    --border-color: #23304a;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --accent-cyan: #06b6d4;
+    --accent-blue: #3b82f6;
+  }
+
+  /* Monochrome High-Contrast Black & White Theme */
+  .theme-monochrome {
+    --bg-primary: #050505;
+    --bg-secondary: #101010;
+    --bg-panel: #181818;
+    --border-color: #333333;
+    --text-primary: #ffffff;
+    --text-secondary: #a3a3a3;
+    --accent-cyan: #ffffff;
+    --accent-blue: #e2e8f0;
+  }
+
+  /* Clean White Theme */
+  .theme-light {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --bg-panel: #f1f5f9;
+    --border-color: #cbd5e1;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --accent-cyan: #0891b2;
+    --accent-blue: #2563eb;
+  }
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.6);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.9);
+}
+
+/* CCTV scanline effect */
+.cctv-scanline {
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.3)
+  );
+  background-size: 100% 4px;
+}
+
+/* Subtle HUD Grid Background */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.theme-light .bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+}
+
+/* Pulsing radar sweep */
+@keyframes radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-radar {
+  animation: radar-sweep 5s linear infinite;
+  transform-origin: center center;
+}
+
+/* Blinking record dot */
+@keyframes blink-rec {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+.animate-blink {
+  animation: blink-rec 1.2s ease-in-out infinite;
+}
+
+/* Glow effects */
+.glow-cyan {
+  box-shadow: 0 0 15px -3px rgba(6, 182, 212, 0.35);
+}
+
+.glow-red {
+  box-shadow: 0 0 15px -2px rgba(239, 68, 68, 0.45);
+}
+
+.glow-amber {
+  box-shadow: 0 0 15px -2px rgba(245, 158, 11, 0.35);
+}
+
+.glow-green {
+  box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.35);
+}

@@ -1,0 +1,4871 @@
+// Real Integrated Dataset
+// Sources:
+// 1. Caltrans PeMS D7 Sensor Network (California Department of Transportation) - 228 sensor stations
+// 2. T-GCN Shenzhen Urban Traffic Speed Matrix - 2,976 intervals across 156 sensor links
+// 3. AI-Powered Vehicle Tracking (YOLOv8 + ByteTrack) - 23,801 vehicle detections
+// 4. Minipro Urban Vehicle Bounding Box Dataset - 75 Pascal VOC XML annotations
+// 5. Accident Detection & Sentinel Dispatch Engine
+// 6. AI Video 4K Surveillance Feed (input-001-001.MOV from ai video.zip)
+
+import type { 
+  CameraFeed, 
+  SafetyAlert, 
+  TrafficHotspot, 
+  HourlyTrafficData, 
+  ZoneSpeedData, 
+  VehicleDistribution,
+  WeeklyTrendPoint 
+} from '../types/index.ts';
+
+export interface DatasetMetadata {
+  generatedAt: string;
+  totalDetectionsAggregated: number;
+  totalPemsStations: number;
+  totalTgcnIntervals: number;
+  totalTgcnLinks: number;
+  totalMiniproXmls: number;
+  networkAvgSpeed: number;
+  aiVideoFeed?: {
+    sourceArchive: string;
+    fileName: string;
+    resolution: string;
+    fps: number;
+    durationSeconds: number;
+    codec: string;
+    streamUrl: string;
+    assignedCameraId: string;
+  };
+}
+
+export const DATASET_METADATA: DatasetMetadata = {
+  "generatedAt": "2026-10-10T14:20:04.261Z",
+  "totalDetectionsAggregated": 23801,
+  "totalPemsStations": 228,
+  "totalTgcnIntervals": 2976,
+  "totalTgcnLinks": 156,
+  "totalMiniproXmls": 78,
+  "networkAvgSpeed": 46,
+  "aiVideoFeed": {
+    "sourceArchive": "c:/Users/Vidhi/Downloads/ai video.zip",
+    "fileName": "input-001-001.MOV",
+    "resolution": "3840x2160 (4K UltraHD)",
+    "fps": 60,
+    "durationSeconds": 741.8,
+    "codec": "HEVC / H.265 (hvc1)",
+    "streamUrl": "/videos/cam_ai_stream.mov",
+    "assignedCameraId": "CAM-716939"
+  }
+};
+
+export const REAL_CAMERAS: CameraFeed[] = [
+  {
+    "id": "CAM-716939",
+    "name": "Caltrans Fwy 5 Southbound Node (Autonomous 4K AI Hub)",
+    "location": "Highway A1 - Postmile District 7 (MP 716939)",
+    "zone": "Highway A1",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.10.100",
+    "vehicleCount": 87,
+    "pedestrianCount": 0,
+    "congestionScore": 95,
+    "incidentType": "Traffic Accident",
+    "latencyMs": 31,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro",
+      "TrackStabilizer-DeJitter",
+      "KinematicCollision-MLP"
+    ],
+    "coordinates": {
+      "x": 54,
+      "y": 90
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_ai_stream.mov",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "objects": [
+      {
+        "id": "det-0-1",
+        "type": "bus",
+        "confidence": 96.7,
+        "box": {
+          "x": 12,
+          "y": 11,
+          "w": 44,
+          "h": 40
+        },
+        "speed": 67,
+        "licensePlate": "CA-473-IW"
+      },
+      {
+        "id": "det-0-2",
+        "type": "car",
+        "confidence": 98.6,
+        "box": {
+          "x": 80,
+          "y": 39,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 54,
+        "licensePlate": "CA-902-VU"
+      }
+    ],
+    "activeHazards": [
+      {
+        "id": "HAZ-CAM0-1",
+        "entityAId": "det-0-1",
+        "entityBId": "det-0-2",
+        "entityAType": "truck",
+        "entityBType": "car",
+        "interactionType": "vehicle-vehicle",
+        "scenario": "Head-On",
+        "status": "Critical: Active Collision",
+        "timeToCollisionSec": 0.4,
+        "proximityMeters": 2.1,
+        "relativeVelocityKmH": 64,
+        "riskScore": 95,
+        "pointA": {
+          "x": 34,
+          "y": 31
+        },
+        "pointB": {
+          "x": 38,
+          "y": 35
+        }
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 2.5 km/h, Congestion index 95%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 716939 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717045",
+    "name": "Caltrans Fwy 10 Westbound Node",
+    "location": "Downtown Core - Postmile District 7 (MP 717045)",
+    "zone": "Downtown Core",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.10.101",
+    "vehicleCount": 87,
+    "pedestrianCount": 33,
+    "congestionScore": 95,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 22,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 42,
+      "y": 88
+    },
+    "videoTheme": "intersection",
+    "videoUrl": "/videos/cam_cmc_tracked.mp4",
+    "imageUrl": "/incidents/testing1.jpg",
+    "objects": [
+      {
+        "id": "det-1-1",
+        "type": "bus",
+        "confidence": 96.1,
+        "box": {
+          "x": 34,
+          "y": 23,
+          "w": 42,
+          "h": 23
+        },
+        "speed": 60,
+        "licensePlate": "CA-222-UE"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 3.1 km/h, Congestion index 95%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717045 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717269",
+    "name": "Caltrans Fwy 60 Westbound Node",
+    "location": "Tech Corridor - Postmile District 7 (MP 717269)",
+    "zone": "Tech Corridor",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.10.102",
+    "vehicleCount": 87,
+    "pedestrianCount": 31,
+    "congestionScore": 95,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 39,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 60,
+      "y": 87
+    },
+    "videoTheme": "crosswalk",
+    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "imageUrl": "/incidents/bus_congestion.jpg",
+    "objects": [
+      {
+        "id": "det-2-1",
+        "type": "motorcycle",
+        "confidence": 95.6,
+        "box": {
+          "x": 85,
+          "y": 31,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 63,
+        "licensePlate": "CA-331-CL"
+      },
+      {
+        "id": "det-2-2",
+        "type": "motorcycle",
+        "confidence": 93.7,
+        "box": {
+          "x": 81,
+          "y": 31,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 53,
+        "licensePlate": "CA-603-PN"
+      },
+      {
+        "id": "det-2-3",
+        "type": "car",
+        "confidence": 95.3,
+        "box": {
+          "x": 85,
+          "y": 29,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 33,
+        "licensePlate": "CA-842-DY"
+      },
+      {
+        "id": "det-2-4",
+        "type": "bus",
+        "confidence": 98.1,
+        "box": {
+          "x": 26,
+          "y": 21,
+          "w": 42,
+          "h": 20
+        },
+        "speed": 60,
+        "licensePlate": "CA-251-ST"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 3.1 km/h, Congestion index 95%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717269 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-768914",
+    "name": "Caltrans Fwy 91 Eastbound Node",
+    "location": "North Sector - Postmile District 7 (MP 768914)",
+    "zone": "North Sector",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.10.103",
+    "vehicleCount": 87,
+    "pedestrianCount": 0,
+    "congestionScore": 95,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 24,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 73,
+      "y": 35
+    },
+    "videoTheme": "tunnel",
+    "videoUrl": "/videos/cam_simulation_accident.mp4",
+    "imageUrl": "/incidents/illegal_parking_truck.jpg",
+    "objects": [
+      {
+        "id": "det-3-1",
+        "type": "motorcycle",
+        "confidence": 97.4,
+        "box": {
+          "x": 20,
+          "y": 49,
+          "w": 22,
+          "h": 22
+        },
+        "speed": 51,
+        "licensePlate": "CA-636-BT"
+      },
+      {
+        "id": "det-3-2",
+        "type": "motorcycle",
+        "confidence": 92.4,
+        "box": {
+          "x": 5,
+          "y": 51,
+          "w": 42,
+          "h": 30
+        },
+        "speed": 54,
+        "licensePlate": "CA-349-IX"
+      },
+      {
+        "id": "det-3-3",
+        "type": "motorcycle",
+        "confidence": 90,
+        "box": {
+          "x": 49,
+          "y": 44,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 40,
+        "licensePlate": "CA-400-XL"
+      },
+      {
+        "id": "det-3-4",
+        "type": "motorcycle",
+        "confidence": 91.9,
+        "box": {
+          "x": 85,
+          "y": 47,
+          "w": 13,
+          "h": 8
+        },
+        "speed": 50,
+        "licensePlate": "CA-616-RD"
+      },
+      {
+        "id": "det-3-5",
+        "type": "motorcycle",
+        "confidence": 99,
+        "box": {
+          "x": 64,
+          "y": 43,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 53,
+        "licensePlate": "CA-514-NH"
+      },
+      {
+        "id": "det-3-6",
+        "type": "motorcycle",
+        "confidence": 94.8,
+        "box": {
+          "x": 46,
+          "y": 44,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 72,
+        "licensePlate": "CA-583-CQ"
+      },
+      {
+        "id": "det-3-7",
+        "type": "motorcycle",
+        "confidence": 93.8,
+        "box": {
+          "x": 44,
+          "y": 45,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 49,
+        "licensePlate": "CA-955-NU"
+      },
+      {
+        "id": "det-3-8",
+        "type": "car",
+        "confidence": 93.8,
+        "box": {
+          "x": 42,
+          "y": 44,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 66,
+        "licensePlate": "CA-467-ST"
+      },
+      {
+        "id": "det-3-9",
+        "type": "motorcycle",
+        "confidence": 99.3,
+        "box": {
+          "x": 39,
+          "y": 44,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 32,
+        "licensePlate": "CA-692-YT"
+      },
+      {
+        "id": "det-3-10",
+        "type": "bus",
+        "confidence": 95.1,
+        "box": {
+          "x": 17,
+          "y": 43,
+          "w": 28,
+          "h": 14
+        },
+        "speed": 62,
+        "licensePlate": "CA-298-UF"
+      },
+      {
+        "id": "det-3-11",
+        "type": "bus",
+        "confidence": 95.2,
+        "box": {
+          "x": 50,
+          "y": 41,
+          "w": 11,
+          "h": 8
+        },
+        "speed": 46,
+        "licensePlate": "CA-186-HD"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 3.4 km/h, Congestion index 95%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 768914 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-760130",
+    "name": "Caltrans Fwy 105 Eastbound Node",
+    "location": "Waterfront Bay - Postmile District 7 (MP 760130)",
+    "zone": "Waterfront Bay",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.10.104",
+    "vehicleCount": 86,
+    "pedestrianCount": 0,
+    "congestionScore": 94,
+    "incidentType": "Overspeeding",
+    "latencyMs": 29,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 41,
+      "y": 52
+    },
+    "videoTheme": "bridge",
+    "videoUrl": "/videos/cam_corridor_flow.mp4",
+    "imageUrl": "/incidents/auto_two_wheeler.jpg",
+    "objects": [
+      {
+        "id": "det-4-1",
+        "type": "bus",
+        "confidence": 94.8,
+        "box": {
+          "x": 5,
+          "y": 19,
+          "w": 42,
+          "h": 23
+        },
+        "speed": 47,
+        "licensePlate": "CA-879-VN"
+      },
+      {
+        "id": "det-4-2",
+        "type": "motorcycle",
+        "confidence": 98.8,
+        "box": {
+          "x": 75,
+          "y": 33,
+          "w": 25,
+          "h": 15
+        },
+        "speed": 28,
+        "licensePlate": "CA-758-GF"
+      },
+      {
+        "id": "det-4-3",
+        "type": "motorcycle",
+        "confidence": 95.2,
+        "box": {
+          "x": 60,
+          "y": 33,
+          "w": 14,
+          "h": 13
+        },
+        "speed": 55,
+        "licensePlate": "CA-656-YL"
+      },
+      {
+        "id": "det-4-4",
+        "type": "motorcycle",
+        "confidence": 92.1,
+        "box": {
+          "x": 48,
+          "y": 32,
+          "w": 11,
+          "h": 10
+        },
+        "speed": 73,
+        "licensePlate": "CA-695-YX"
+      },
+      {
+        "id": "det-4-5",
+        "type": "motorcycle",
+        "confidence": 98.1,
+        "box": {
+          "x": 46,
+          "y": 32,
+          "w": 8,
+          "h": 10
+        },
+        "speed": 72,
+        "licensePlate": "CA-216-IJ"
+      },
+      {
+        "id": "det-4-6",
+        "type": "motorcycle",
+        "confidence": 98.8,
+        "box": {
+          "x": 5,
+          "y": 27,
+          "w": 23,
+          "h": 30
+        },
+        "speed": 74,
+        "licensePlate": "CA-419-JO"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 3.6 km/h, Congestion index 94%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 760130 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-763267",
+    "name": "Caltrans Fwy 110 Southbound Node",
+    "location": "Harbour District - Postmile District 7 (MP 763267)",
+    "zone": "Harbour District",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.10.105",
+    "vehicleCount": 86,
+    "pedestrianCount": 0,
+    "congestionScore": 94,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 29,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 43,
+      "y": 69
+    },
+    "videoTheme": "roundabout",
+    "videoUrl": "/videos/cam_harbour_logistics.mp4",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "objects": [
+      {
+        "id": "det-5-1",
+        "type": "bus",
+        "confidence": 99.4,
+        "box": {
+          "x": 5,
+          "y": 17,
+          "w": 44,
+          "h": 40
+        },
+        "speed": 39,
+        "licensePlate": "CA-740-FF"
+      },
+      {
+        "id": "det-5-2",
+        "type": "bus",
+        "confidence": 90.8,
+        "box": {
+          "x": 20,
+          "y": 14,
+          "w": 44,
+          "h": 40
+        },
+        "speed": 65,
+        "licensePlate": "CA-920-NJ"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 3.8 km/h, Congestion index 94%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 763267 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-718280",
+    "name": "Caltrans Fwy 405 Southbound Node",
+    "location": "Tech Corridor - Postmile District 7 (MP 718280)",
+    "zone": "Tech Corridor",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.10.106",
+    "vehicleCount": 86,
+    "pedestrianCount": 19,
+    "congestionScore": 94,
+    "incidentType": "Wrong-Way Vehicle",
+    "latencyMs": 35,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 28,
+      "y": 43
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_traffic_zone.mp4",
+    "imageUrl": "/incidents/testing1.jpg",
+    "objects": [
+      {
+        "id": "det-6-1",
+        "type": "truck",
+        "confidence": 96.2,
+        "box": {
+          "x": 20,
+          "y": 16,
+          "w": 21,
+          "h": 8
+        },
+        "speed": 54,
+        "licensePlate": "CA-379-YL"
+      },
+      {
+        "id": "det-6-2",
+        "type": "motorcycle",
+        "confidence": 91,
+        "box": {
+          "x": 68,
+          "y": 27,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 38,
+        "licensePlate": "CA-536-CU"
+      },
+      {
+        "id": "det-6-3",
+        "type": "motorcycle",
+        "confidence": 94.4,
+        "box": {
+          "x": 78,
+          "y": 34,
+          "w": 22,
+          "h": 16
+        },
+        "speed": 51,
+        "licensePlate": "CA-272-PJ"
+      },
+      {
+        "id": "det-6-4",
+        "type": "bicycle",
+        "confidence": 90.9,
+        "box": {
+          "x": 77,
+          "y": 28,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 29,
+        "licensePlate": "CA-271-FQ"
+      },
+      {
+        "id": "det-6-5",
+        "type": "truck",
+        "confidence": 97.8,
+        "box": {
+          "x": 85,
+          "y": 20,
+          "w": 13,
+          "h": 12
+        },
+        "speed": 65,
+        "licensePlate": "CA-878-DD"
+      },
+      {
+        "id": "det-6-6",
+        "type": "car",
+        "confidence": 91.7,
+        "box": {
+          "x": 5,
+          "y": 17,
+          "w": 42,
+          "h": 18
+        },
+        "speed": 31,
+        "licensePlate": "CA-187-HW"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 4.1 km/h, Congestion index 94%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 718280 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-762685",
+    "name": "Caltrans Fwy 605 Southbound Node",
+    "location": "North Sector - Postmile District 7 (MP 762685)",
+    "zone": "North Sector",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.10.107",
+    "vehicleCount": 86,
+    "pedestrianCount": 0,
+    "congestionScore": 94,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 44,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 81,
+      "y": 82
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
+    "imageUrl": "/incidents/bus_congestion.jpg",
+    "objects": [
+      {
+        "id": "det-7-1",
+        "type": "car",
+        "confidence": 97.3,
+        "box": {
+          "x": 5,
+          "y": 10,
+          "w": 42,
+          "h": 40
+        },
+        "speed": 41,
+        "licensePlate": "CA-958-KR"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 4.2 km/h, Congestion index 94%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 762685 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-718002",
+    "name": "Caltrans Fwy 710 Southbound Node",
+    "location": "Harbour District - Postmile District 7 (MP 718002)",
+    "zone": "Harbour District",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.10.108",
+    "vehicleCount": 85,
+    "pedestrianCount": 0,
+    "congestionScore": 93,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 33,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 62,
+      "y": 65
+    },
+    "videoTheme": "roundabout",
+    "videoUrl": "/videos/cam_harbour_logistics.mp4",
+    "imageUrl": "/incidents/illegal_parking_truck.jpg",
+    "objects": [
+      {
+        "id": "det-8-1",
+        "type": "car",
+        "confidence": 93.9,
+        "box": {
+          "x": 32,
+          "y": 12,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 26,
+        "licensePlate": "CA-708-IP"
+      },
+      {
+        "id": "det-8-2",
+        "type": "motorcycle",
+        "confidence": 90.6,
+        "box": {
+          "x": 35,
+          "y": 14,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 31,
+        "licensePlate": "CA-523-AK"
+      },
+      {
+        "id": "det-8-3",
+        "type": "motorcycle",
+        "confidence": 99,
+        "box": {
+          "x": 39,
+          "y": 14,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 43,
+        "licensePlate": "CA-931-MU"
+      },
+      {
+        "id": "det-8-4",
+        "type": "car",
+        "confidence": 96.7,
+        "box": {
+          "x": 44,
+          "y": 10,
+          "w": 29,
+          "h": 24
+        },
+        "speed": 48,
+        "licensePlate": "CA-526-NJ"
+      },
+      {
+        "id": "det-8-5",
+        "type": "truck",
+        "confidence": 91.5,
+        "box": {
+          "x": 38,
+          "y": 13,
+          "w": 9,
+          "h": 8
+        },
+        "speed": 48,
+        "licensePlate": "CA-416-IA"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 4.5 km/h, Congestion index 93%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 718002 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-759700",
+    "name": "Caltrans Fwy 5 Southbound Node",
+    "location": "Highway A1 - Postmile District 7 (MP 759700)",
+    "zone": "Highway A1",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.10.109",
+    "vehicleCount": 85,
+    "pedestrianCount": 0,
+    "congestionScore": 93,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 42,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 57,
+      "y": 83
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_highway_collision.mp4",
+    "imageUrl": "/incidents/auto_two_wheeler.jpg",
+    "objects": [
+      {
+        "id": "det-9-1",
+        "type": "car",
+        "confidence": 93.3,
+        "box": {
+          "x": 15,
+          "y": 31,
+          "w": 42,
+          "h": 23
+        },
+        "speed": 38,
+        "licensePlate": "CA-991-TD"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 4.7 km/h, Congestion index 93%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 759700 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-718419",
+    "name": "Caltrans Fwy 10 Eastbound Node",
+    "location": "Downtown Core - Postmile District 7 (MP 718419)",
+    "zone": "Downtown Core",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.11.110",
+    "vehicleCount": 85,
+    "pedestrianCount": 18,
+    "congestionScore": 93,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 28,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 44,
+      "y": 89
+    },
+    "videoTheme": "intersection",
+    "videoUrl": "/videos/cam_cmc_tracked.mp4",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "objects": [
+      {
+        "id": "det-10-1",
+        "type": "car",
+        "confidence": 97.5,
+        "box": {
+          "x": 77,
+          "y": 32,
+          "w": 15,
+          "h": 8
+        },
+        "speed": 65,
+        "licensePlate": "CA-898-NC"
+      },
+      {
+        "id": "det-10-2",
+        "type": "motorcycle",
+        "confidence": 94.4,
+        "box": {
+          "x": 70,
+          "y": 36,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 37,
+        "licensePlate": "CA-739-VZ"
+      },
+      {
+        "id": "det-10-3",
+        "type": "bicycle",
+        "confidence": 92.1,
+        "box": {
+          "x": 69,
+          "y": 36,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 38,
+        "licensePlate": "CA-668-MV"
+      },
+      {
+        "id": "det-10-4",
+        "type": "bicycle",
+        "confidence": 91.8,
+        "box": {
+          "x": 58,
+          "y": 37,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 64,
+        "licensePlate": "CA-618-HI"
+      },
+      {
+        "id": "det-10-5",
+        "type": "car",
+        "confidence": 98,
+        "box": {
+          "x": 5,
+          "y": 33,
+          "w": 42,
+          "h": 23
+        },
+        "speed": 31,
+        "licensePlate": "CA-423-AU"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 4.7 km/h, Congestion index 93%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 718419 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717290",
+    "name": "Caltrans Fwy 60 Eastbound Node",
+    "location": "Tech Corridor - Postmile District 7 (MP 717290)",
+    "zone": "Tech Corridor",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.11.111",
+    "vehicleCount": 85,
+    "pedestrianCount": 25,
+    "congestionScore": 93,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 31,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 75,
+      "y": 88
+    },
+    "videoTheme": "crosswalk",
+    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "imageUrl": "/incidents/testing1.jpg",
+    "objects": [
+      {
+        "id": "det-11-1",
+        "type": "car",
+        "confidence": 97.4,
+        "box": {
+          "x": 38,
+          "y": 35,
+          "w": 42,
+          "h": 24
+        },
+        "speed": 55,
+        "licensePlate": "CA-292-MH"
+      },
+      {
+        "id": "det-11-2",
+        "type": "car",
+        "confidence": 96,
+        "box": {
+          "x": 25,
+          "y": 32,
+          "w": 14,
+          "h": 10
+        },
+        "speed": 32,
+        "licensePlate": "CA-989-UC"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 4.8 km/h, Congestion index 93%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717290 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717435",
+    "name": "Caltrans Fwy 91 Westbound Node",
+    "location": "North Sector - Postmile District 7 (MP 717435)",
+    "zone": "North Sector",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.11.112",
+    "vehicleCount": 85,
+    "pedestrianCount": 0,
+    "congestionScore": 93,
+    "incidentType": "Traffic Accident",
+    "latencyMs": 24,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 78,
+      "y": 35
+    },
+    "videoTheme": "tunnel",
+    "videoUrl": "/videos/cam_simulation_accident.mp4",
+    "imageUrl": "/incidents/bus_congestion.jpg",
+    "objects": [
+      {
+        "id": "det-12-1",
+        "type": "car",
+        "confidence": 91.3,
+        "box": {
+          "x": 5,
+          "y": 10,
+          "w": 42,
+          "h": 40
+        },
+        "speed": 42,
+        "licensePlate": "CA-129-SF"
+      },
+      {
+        "id": "det-12-2",
+        "type": "car",
+        "confidence": 95.6,
+        "box": {
+          "x": 66,
+          "y": 20,
+          "w": 19,
+          "h": 21
+        },
+        "speed": 28,
+        "licensePlate": "CA-729-SJ"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 4.8 km/h, Congestion index 93%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717435 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-760166",
+    "name": "Caltrans Fwy 105 Eastbound Node",
+    "location": "Waterfront Bay - Postmile District 7 (MP 760166)",
+    "zone": "Waterfront Bay",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.11.113",
+    "vehicleCount": 84,
+    "pedestrianCount": 0,
+    "congestionScore": 92,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 29,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 43,
+      "y": 52
+    },
+    "videoTheme": "bridge",
+    "videoUrl": "/videos/cam_corridor_flow.mp4",
+    "imageUrl": "/incidents/illegal_parking_truck.jpg",
+    "objects": [
+      {
+        "id": "det-13-1",
+        "type": "motorcycle",
+        "confidence": 92.4,
+        "box": {
+          "x": 65,
+          "y": 39,
+          "w": 35,
+          "h": 19
+        },
+        "speed": 36,
+        "licensePlate": "CA-781-NN"
+      },
+      {
+        "id": "det-13-2",
+        "type": "motorcycle",
+        "confidence": 97.4,
+        "box": {
+          "x": 61,
+          "y": 33,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 38,
+        "licensePlate": "CA-249-PC"
+      },
+      {
+        "id": "det-13-3",
+        "type": "car",
+        "confidence": 96.5,
+        "box": {
+          "x": 68,
+          "y": 30,
+          "w": 26,
+          "h": 8
+        },
+        "speed": 28,
+        "licensePlate": "CA-486-WQ"
+      },
+      {
+        "id": "det-13-4",
+        "type": "truck",
+        "confidence": 91.8,
+        "box": {
+          "x": 53,
+          "y": 31,
+          "w": 9,
+          "h": 8
+        },
+        "speed": 68,
+        "licensePlate": "CA-457-KW"
+      },
+      {
+        "id": "det-13-5",
+        "type": "car",
+        "confidence": 98,
+        "box": {
+          "x": 50,
+          "y": 33,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 58,
+        "licensePlate": "CA-704-RW"
+      },
+      {
+        "id": "det-13-6",
+        "type": "car",
+        "confidence": 97.2,
+        "box": {
+          "x": 66,
+          "y": 30,
+          "w": 24,
+          "h": 11
+        },
+        "speed": 26,
+        "licensePlate": "CA-530-PT"
+      },
+      {
+        "id": "det-13-7",
+        "type": "motorcycle",
+        "confidence": 97,
+        "box": {
+          "x": 20,
+          "y": 33,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 29,
+        "licensePlate": "CA-347-ET"
+      },
+      {
+        "id": "det-13-8",
+        "type": "motorcycle",
+        "confidence": 91.4,
+        "box": {
+          "x": 26,
+          "y": 34,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 25,
+        "licensePlate": "CA-574-BG"
+      },
+      {
+        "id": "det-13-9",
+        "type": "motorcycle",
+        "confidence": 90.4,
+        "box": {
+          "x": 35,
+          "y": 34,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 39,
+        "licensePlate": "CA-387-AX"
+      },
+      {
+        "id": "det-13-10",
+        "type": "truck",
+        "confidence": 90.5,
+        "box": {
+          "x": 8,
+          "y": 31,
+          "w": 9,
+          "h": 8
+        },
+        "speed": 74,
+        "licensePlate": "CA-611-WJ"
+      },
+      {
+        "id": "det-13-11",
+        "type": "truck",
+        "confidence": 93,
+        "box": {
+          "x": 6,
+          "y": 31,
+          "w": 9,
+          "h": 8
+        },
+        "speed": 42,
+        "licensePlate": "CA-163-MH"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 4.9 km/h, Congestion index 92%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 760166 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-759418",
+    "name": "Caltrans Fwy 110 Southbound Node",
+    "location": "Harbour District - Postmile District 7 (MP 759418)",
+    "zone": "Harbour District",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.11.114",
+    "vehicleCount": 84,
+    "pedestrianCount": 0,
+    "congestionScore": 92,
+    "incidentType": "Overspeeding",
+    "latencyMs": 37,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 43,
+      "y": 51
+    },
+    "videoTheme": "roundabout",
+    "videoUrl": "/videos/cam_harbour_logistics.mp4",
+    "imageUrl": "/incidents/auto_two_wheeler.jpg",
+    "objects": [
+      {
+        "id": "det-14-1",
+        "type": "motorcycle",
+        "confidence": 96,
+        "box": {
+          "x": 12,
+          "y": 22,
+          "w": 13,
+          "h": 9
+        },
+        "speed": 73,
+        "licensePlate": "CA-993-PL"
+      },
+      {
+        "id": "det-14-2",
+        "type": "car",
+        "confidence": 90.1,
+        "box": {
+          "x": 45,
+          "y": 10,
+          "w": 34,
+          "h": 25
+        },
+        "speed": 45,
+        "licensePlate": "CA-371-EK"
+      },
+      {
+        "id": "det-14-3",
+        "type": "motorcycle",
+        "confidence": 92.5,
+        "box": {
+          "x": 28,
+          "y": 27,
+          "w": 37,
+          "h": 38
+        },
+        "speed": 67,
+        "licensePlate": "CA-173-LS"
+      },
+      {
+        "id": "det-14-4",
+        "type": "car",
+        "confidence": 94.8,
+        "box": {
+          "x": 77,
+          "y": 19,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 62,
+        "licensePlate": "CA-660-SO"
+      },
+      {
+        "id": "det-14-5",
+        "type": "bicycle",
+        "confidence": 97.8,
+        "box": {
+          "x": 22,
+          "y": 26,
+          "w": 8,
+          "h": 11
+        },
+        "speed": 53,
+        "licensePlate": "CA-139-JS"
+      },
+      {
+        "id": "det-14-6",
+        "type": "bicycle",
+        "confidence": 91.1,
+        "box": {
+          "x": 27,
+          "y": 26,
+          "w": 15,
+          "h": 10
+        },
+        "speed": 41,
+        "licensePlate": "CA-200-SL"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 4.9 km/h, Congestion index 92%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 759418 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-718223",
+    "name": "Caltrans Fwy 405 Southbound Node",
+    "location": "Tech Corridor - Postmile District 7 (MP 718223)",
+    "zone": "Tech Corridor",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.11.115",
+    "vehicleCount": 84,
+    "pedestrianCount": 36,
+    "congestionScore": 92,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 40,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 70,
+      "y": 11
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_traffic_zone.mp4",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "objects": [
+      {
+        "id": "det-15-1",
+        "type": "car",
+        "confidence": 92.9,
+        "box": {
+          "x": 5,
+          "y": 10,
+          "w": 42,
+          "h": 40
+        },
+        "speed": 30,
+        "licensePlate": "CA-599-OK"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 5 km/h, Congestion index 92%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 718223 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-716819",
+    "name": "Caltrans Fwy 605 Northbound Node",
+    "location": "North Sector - Postmile District 7 (MP 716819)",
+    "zone": "North Sector",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.11.116",
+    "vehicleCount": 84,
+    "pedestrianCount": 0,
+    "congestionScore": 92,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 33,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 81,
+      "y": 79
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
+    "imageUrl": "/incidents/testing1.jpg",
+    "objects": [
+      {
+        "id": "det-16-1",
+        "type": "car",
+        "confidence": 96.1,
+        "box": {
+          "x": 14,
+          "y": 35,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 73,
+        "licensePlate": "CA-931-KY"
+      },
+      {
+        "id": "det-16-2",
+        "type": "car",
+        "confidence": 99.1,
+        "box": {
+          "x": 48,
+          "y": 32,
+          "w": 12,
+          "h": 8
+        },
+        "speed": 67,
+        "licensePlate": "CA-977-EJ"
+      },
+      {
+        "id": "det-16-3",
+        "type": "motorcycle",
+        "confidence": 94.3,
+        "box": {
+          "x": 40,
+          "y": 35,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 43,
+        "licensePlate": "CA-616-VM"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 5.1 km/h, Congestion index 92%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 716819 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-718493",
+    "name": "Caltrans Fwy 710 Southbound Node",
+    "location": "Harbour District - Postmile District 7 (MP 718493)",
+    "zone": "Harbour District",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.11.117",
+    "vehicleCount": 84,
+    "pedestrianCount": 0,
+    "congestionScore": 92,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 33,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 60,
+      "y": 45
+    },
+    "videoTheme": "roundabout",
+    "videoUrl": "/videos/cam_harbour_logistics.mp4",
+    "imageUrl": "/incidents/bus_congestion.jpg",
+    "objects": [
+      {
+        "id": "det-17-1",
+        "type": "car",
+        "confidence": 91.5,
+        "box": {
+          "x": 22,
+          "y": 48,
+          "w": 42,
+          "h": 40
+        },
+        "speed": 37,
+        "licensePlate": "CA-745-OZ"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 5.4 km/h, Congestion index 92%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 718493 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-716925",
+    "name": "Caltrans Fwy 5 Northbound Node",
+    "location": "Highway A1 - Postmile District 7 (MP 716925)",
+    "zone": "Highway A1",
+    "status": "offline",
+    "resolution": "4K UltraHD",
+    "fps": 0,
+    "ip": "192.168.11.118",
+    "vehicleCount": 0,
+    "pedestrianCount": 0,
+    "congestionScore": 0,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 0,
+    "activeAiModels": [
+      "Offline - Diagnostics"
+    ],
+    "coordinates": {
+      "x": 66,
+      "y": 74
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
+    "imageUrl": "/incidents/illegal_parking_truck.jpg",
+    "objects": [
+      {
+        "id": "det-18-1",
+        "type": "car",
+        "confidence": 96.1,
+        "box": {
+          "x": 56,
+          "y": 10,
+          "w": 18,
+          "h": 9
+        },
+        "speed": 58,
+        "licensePlate": "CA-931-PI"
+      },
+      {
+        "id": "det-18-2",
+        "type": "car",
+        "confidence": 96.6,
+        "box": {
+          "x": 85,
+          "y": 10,
+          "w": 14,
+          "h": 10
+        },
+        "speed": 40,
+        "licensePlate": "CA-676-UY"
+      },
+      {
+        "id": "det-18-3",
+        "type": "car",
+        "confidence": 95,
+        "box": {
+          "x": 5,
+          "y": 12,
+          "w": 28,
+          "h": 22
+        },
+        "speed": 50,
+        "licensePlate": "CA-765-DQ"
+      },
+      {
+        "id": "det-18-4",
+        "type": "car",
+        "confidence": 90.4,
+        "box": {
+          "x": 16,
+          "y": 10,
+          "w": 42,
+          "h": 16
+        },
+        "speed": 31,
+        "licensePlate": "CA-359-EO"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 5.4 km/h, Congestion index 92%",
+        "severity": "Low"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 716925 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-718410",
+    "name": "Caltrans Fwy 10 Eastbound Node",
+    "location": "Downtown Core - Postmile District 7 (MP 718410)",
+    "zone": "Downtown Core",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.11.119",
+    "vehicleCount": 84,
+    "pedestrianCount": 16,
+    "congestionScore": 92,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 20,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 18,
+      "y": 86
+    },
+    "videoTheme": "intersection",
+    "videoUrl": "/videos/cam_cmc_tracked.mp4",
+    "imageUrl": "/incidents/auto_two_wheeler.jpg",
+    "objects": [
+      {
+        "id": "det-19-1",
+        "type": "car",
+        "confidence": 98.7,
+        "box": {
+          "x": 20,
+          "y": 15,
+          "w": 26,
+          "h": 25
+        },
+        "speed": 46,
+        "licensePlate": "CA-425-OB"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 5.4 km/h, Congestion index 92%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 718410 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-716206",
+    "name": "Caltrans Fwy 60 Westbound Node",
+    "location": "Tech Corridor - Postmile District 7 (MP 716206)",
+    "zone": "Tech Corridor",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.12.120",
+    "vehicleCount": 84,
+    "pedestrianCount": 19,
+    "congestionScore": 92,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 45,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 55,
+      "y": 86
+    },
+    "videoTheme": "crosswalk",
+    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "objects": [
+      {
+        "id": "det-20-1",
+        "type": "car",
+        "confidence": 92.9,
+        "box": {
+          "x": 5,
+          "y": 10,
+          "w": 42,
+          "h": 40
+        },
+        "speed": 64,
+        "licensePlate": "CA-533-JB"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 5.4 km/h, Congestion index 92%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 716206 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717439",
+    "name": "Caltrans Fwy 91 Eastbound Node",
+    "location": "North Sector - Postmile District 7 (MP 717439)",
+    "zone": "North Sector",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.12.121",
+    "vehicleCount": 84,
+    "pedestrianCount": 0,
+    "congestionScore": 92,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 40,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 79,
+      "y": 35
+    },
+    "videoTheme": "tunnel",
+    "videoUrl": "/videos/cam_simulation_accident.mp4",
+    "imageUrl": "/incidents/testing1.jpg",
+    "objects": [
+      {
+        "id": "det-21-1",
+        "type": "truck",
+        "confidence": 98.6,
+        "box": {
+          "x": 19,
+          "y": 42,
+          "w": 34,
+          "h": 27
+        },
+        "speed": 28,
+        "licensePlate": "CA-438-YZ"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 5.4 km/h, Congestion index 92%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717439 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-760100",
+    "name": "Caltrans Fwy 105 Eastbound Node",
+    "location": "Waterfront Bay - Postmile District 7 (MP 760100)",
+    "zone": "Waterfront Bay",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.12.122",
+    "vehicleCount": 84,
+    "pedestrianCount": 0,
+    "congestionScore": 91,
+    "incidentType": "Illegal Parking",
+    "latencyMs": 31,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 35,
+      "y": 51
+    },
+    "videoTheme": "bridge",
+    "videoUrl": "/videos/cam_corridor_flow.mp4",
+    "imageUrl": "/incidents/bus_congestion.jpg",
+    "objects": [
+      {
+        "id": "det-22-1",
+        "type": "truck",
+        "confidence": 94.4,
+        "box": {
+          "x": 16,
+          "y": 44,
+          "w": 42,
+          "h": 34
+        },
+        "speed": 67,
+        "licensePlate": "CA-292-TT"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 5.6 km/h, Congestion index 91%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 760100 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-763447",
+    "name": "Caltrans Fwy 110 Southbound Node",
+    "location": "Harbour District - Postmile District 7 (MP 763447)",
+    "zone": "Harbour District",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.12.123",
+    "vehicleCount": 84,
+    "pedestrianCount": 0,
+    "congestionScore": 91,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 39,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 43,
+      "y": 82
+    },
+    "videoTheme": "roundabout",
+    "videoUrl": "/videos/cam_harbour_logistics.mp4",
+    "imageUrl": "/incidents/illegal_parking_truck.jpg",
+    "objects": [
+      {
+        "id": "det-23-1",
+        "type": "truck",
+        "confidence": 95.5,
+        "box": {
+          "x": 19,
+          "y": 45,
+          "w": 42,
+          "h": 26
+        },
+        "speed": 51,
+        "licensePlate": "CA-336-TE"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 5.7 km/h, Congestion index 91%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 763447 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-771864",
+    "name": "Caltrans Fwy 405 Southbound Node",
+    "location": "Tech Corridor - Postmile District 7 (MP 771864)",
+    "zone": "Tech Corridor",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.12.124",
+    "vehicleCount": 84,
+    "pedestrianCount": 12,
+    "congestionScore": 91,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 38,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 57,
+      "y": 17
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_traffic_zone.mp4",
+    "imageUrl": "/incidents/auto_two_wheeler.jpg",
+    "objects": [
+      {
+        "id": "det-24-1",
+        "type": "truck",
+        "confidence": 98.8,
+        "box": {
+          "x": 50,
+          "y": 46,
+          "w": 10,
+          "h": 8
+        },
+        "speed": 59,
+        "licensePlate": "CA-474-AR"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 5.7 km/h, Congestion index 91%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 771864 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717864",
+    "name": "Caltrans Fwy 605 Northbound Node",
+    "location": "North Sector - Postmile District 7 (MP 717864)",
+    "zone": "North Sector",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.12.125",
+    "vehicleCount": 84,
+    "pedestrianCount": 0,
+    "congestionScore": 91,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 33,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 73,
+      "y": 46
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "objects": [
+      {
+        "id": "det-25-1",
+        "type": "truck",
+        "confidence": 93.4,
+        "box": {
+          "x": 44,
+          "y": 25,
+          "w": 41,
+          "h": 9
+        },
+        "speed": 73,
+        "licensePlate": "CA-231-EX"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 5.9 km/h, Congestion index 91%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717864 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717995",
+    "name": "Caltrans Fwy 710 Northbound Node",
+    "location": "Harbour District - Postmile District 7 (MP 717995)",
+    "zone": "Harbour District",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.12.126",
+    "vehicleCount": 84,
+    "pedestrianCount": 0,
+    "congestionScore": 91,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 37,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 62,
+      "y": 60
+    },
+    "videoTheme": "roundabout",
+    "videoUrl": "/videos/cam_harbour_logistics.mp4",
+    "imageUrl": "/incidents/testing1.jpg",
+    "objects": [
+      {
+        "id": "det-26-1",
+        "type": "truck",
+        "confidence": 98.4,
+        "box": {
+          "x": 77,
+          "y": 27,
+          "w": 17,
+          "h": 9
+        },
+        "speed": 39,
+        "licensePlate": "CA-866-VZ"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6 km/h, Congestion index 91%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717995 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-715930",
+    "name": "Caltrans Fwy 5 Northbound Node",
+    "location": "Highway A1 - Postmile District 7 (MP 715930)",
+    "zone": "Highway A1",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.12.127",
+    "vehicleCount": 84,
+    "pedestrianCount": 0,
+    "congestionScore": 91,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 20,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 70,
+      "y": 67
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "imageUrl": "/incidents/bus_congestion.jpg",
+    "objects": [
+      {
+        "id": "det-27-1",
+        "type": "truck",
+        "confidence": 98.2,
+        "box": {
+          "x": 5,
+          "y": 35,
+          "w": 44,
+          "h": 40
+        },
+        "speed": 64,
+        "licensePlate": "CA-721-OU"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6 km/h, Congestion index 91%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 715930 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-764050",
+    "name": "Caltrans Fwy 10 Westbound Node",
+    "location": "Downtown Core - Postmile District 7 (MP 764050)",
+    "zone": "Downtown Core",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.12.128",
+    "vehicleCount": 84,
+    "pedestrianCount": 24,
+    "congestionScore": 91,
+    "incidentType": "Pedestrian in Restricted Area",
+    "latencyMs": 42,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 10,
+      "y": 83
+    },
+    "videoTheme": "intersection",
+    "videoUrl": "/videos/cam_cmc_tracked.mp4",
+    "imageUrl": "/incidents/illegal_parking_truck.jpg",
+    "objects": [
+      {
+        "id": "det-28-1",
+        "type": "truck",
+        "confidence": 92.8,
+        "box": {
+          "x": 10,
+          "y": 33,
+          "w": 44,
+          "h": 40
+        },
+        "speed": 45,
+        "licensePlate": "CA-159-HH"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.1 km/h, Congestion index 91%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 764050 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717274",
+    "name": "Caltrans Fwy 60 Westbound Node",
+    "location": "Tech Corridor - Postmile District 7 (MP 717274)",
+    "zone": "Tech Corridor",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.12.129",
+    "vehicleCount": 84,
+    "pedestrianCount": 14,
+    "congestionScore": 91,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 20,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 65,
+      "y": 88
+    },
+    "videoTheme": "crosswalk",
+    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "imageUrl": "/incidents/auto_two_wheeler.jpg",
+    "objects": [
+      {
+        "id": "det-29-1",
+        "type": "truck",
+        "confidence": 90,
+        "box": {
+          "x": 27,
+          "y": 20,
+          "w": 14,
+          "h": 8
+        },
+        "speed": 52,
+        "licensePlate": "CA-181-XT"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.1 km/h, Congestion index 91%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717274 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717393",
+    "name": "Caltrans Fwy 91 Eastbound Node",
+    "location": "North Sector - Postmile District 7 (MP 717393)",
+    "zone": "North Sector",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.13.130",
+    "vehicleCount": 83,
+    "pedestrianCount": 0,
+    "congestionScore": 90,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 45,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 58,
+      "y": 35
+    },
+    "videoTheme": "tunnel",
+    "videoUrl": "/videos/cam_simulation_accident.mp4",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "objects": [
+      {
+        "id": "det-30-1",
+        "type": "truck",
+        "confidence": 96.5,
+        "box": {
+          "x": 34,
+          "y": 29,
+          "w": 24,
+          "h": 21
+        },
+        "speed": 26,
+        "licensePlate": "CA-398-AP"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.2 km/h, Congestion index 90%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717393 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-760289",
+    "name": "Caltrans Fwy 105 Eastbound Node",
+    "location": "Waterfront Bay - Postmile District 7 (MP 760289)",
+    "zone": "Waterfront Bay",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.13.131",
+    "vehicleCount": 83,
+    "pedestrianCount": 0,
+    "congestionScore": 90,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 23,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 64,
+      "y": 47
+    },
+    "videoTheme": "bridge",
+    "videoUrl": "/videos/cam_corridor_flow.mp4",
+    "imageUrl": "/incidents/testing1.jpg",
+    "objects": [
+      {
+        "id": "det-31-1",
+        "type": "truck",
+        "confidence": 98.3,
+        "box": {
+          "x": 14,
+          "y": 19,
+          "w": 42,
+          "h": 29
+        },
+        "speed": 62,
+        "licensePlate": "CA-254-IT"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.3 km/h, Congestion index 90%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 760289 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-716499",
+    "name": "Caltrans Fwy 110 Northbound Node",
+    "location": "Harbour District - Postmile District 7 (MP 716499)",
+    "zone": "Harbour District",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.13.132",
+    "vehicleCount": 83,
+    "pedestrianCount": 0,
+    "congestionScore": 90,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 29,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 43,
+      "y": 60
+    },
+    "videoTheme": "roundabout",
+    "videoUrl": "/videos/cam_harbour_logistics.mp4",
+    "imageUrl": "/incidents/bus_congestion.jpg",
+    "objects": [
+      {
+        "id": "det-32-1",
+        "type": "truck",
+        "confidence": 98.6,
+        "box": {
+          "x": 5,
+          "y": 28,
+          "w": 42,
+          "h": 36
+        },
+        "speed": 54,
+        "licensePlate": "CA-255-IQ"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.3 km/h, Congestion index 90%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 716499 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-718245",
+    "name": "Caltrans Fwy 405 Southbound Node",
+    "location": "Tech Corridor - Postmile District 7 (MP 718245)",
+    "zone": "Tech Corridor",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.13.133",
+    "vehicleCount": 83,
+    "pedestrianCount": 44,
+    "congestionScore": 90,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 29,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 58,
+      "y": 16
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_traffic_zone.mp4",
+    "imageUrl": "/incidents/illegal_parking_truck.jpg",
+    "objects": [
+      {
+        "id": "det-33-1",
+        "type": "truck",
+        "confidence": 96.3,
+        "box": {
+          "x": 14,
+          "y": 20,
+          "w": 44,
+          "h": 40
+        },
+        "speed": 72,
+        "licensePlate": "CA-858-ZT"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.4 km/h, Congestion index 90%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 718245 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717940",
+    "name": "Caltrans Fwy 605 Northbound Node",
+    "location": "North Sector - Postmile District 7 (MP 717940)",
+    "zone": "North Sector",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.13.134",
+    "vehicleCount": 83,
+    "pedestrianCount": 0,
+    "congestionScore": 90,
+    "incidentType": "Traffic Accident",
+    "latencyMs": 35,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 84,
+      "y": 85
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
+    "imageUrl": "/incidents/auto_two_wheeler.jpg",
+    "objects": [
+      {
+        "id": "det-34-1",
+        "type": "truck",
+        "confidence": 96,
+        "box": {
+          "x": 5,
+          "y": 28,
+          "w": 44,
+          "h": 40
+        },
+        "speed": 39,
+        "licensePlate": "CA-680-LR"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.5 km/h, Congestion index 90%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717940 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-718018",
+    "name": "Caltrans Fwy 710 Southbound Node",
+    "location": "Harbour District - Postmile District 7 (MP 718018)",
+    "zone": "Harbour District",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.13.135",
+    "vehicleCount": 83,
+    "pedestrianCount": 0,
+    "congestionScore": 90,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 44,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 62,
+      "y": 89
+    },
+    "videoTheme": "roundabout",
+    "videoUrl": "/videos/cam_harbour_logistics.mp4",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "objects": [
+      {
+        "id": "det-35-1",
+        "type": "truck",
+        "confidence": 92.6,
+        "box": {
+          "x": 14,
+          "y": 14,
+          "w": 42,
+          "h": 35
+        },
+        "speed": 46,
+        "licensePlate": "CA-405-XR"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.6 km/h, Congestion index 90%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 718018 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-715938",
+    "name": "Caltrans Fwy 5 Northbound Node",
+    "location": "Highway A1 - Postmile District 7 (MP 715938)",
+    "zone": "Highway A1",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.13.136",
+    "vehicleCount": 83,
+    "pedestrianCount": 0,
+    "congestionScore": 90,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 24,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 65,
+      "y": 77
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_ai_stream.mov",
+    "imageUrl": "/incidents/testing1.jpg",
+    "objects": [
+      {
+        "id": "det-36-1",
+        "type": "truck",
+        "confidence": 96,
+        "box": {
+          "x": 18,
+          "y": 17,
+          "w": 42,
+          "h": 14
+        },
+        "speed": 37,
+        "licensePlate": "CA-851-DD"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.7 km/h, Congestion index 90%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 715938 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717032",
+    "name": "Caltrans Fwy 10 Eastbound Node",
+    "location": "Downtown Core - Postmile District 7 (MP 717032)",
+    "zone": "Downtown Core",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.13.137",
+    "vehicleCount": 83,
+    "pedestrianCount": 31,
+    "congestionScore": 90,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 31,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 34,
+      "y": 88
+    },
+    "videoTheme": "intersection",
+    "videoUrl": "/videos/cam_cmc_tracked.mp4",
+    "imageUrl": "/incidents/bus_congestion.jpg",
+    "objects": [
+      {
+        "id": "det-37-1",
+        "type": "truck",
+        "confidence": 90.7,
+        "box": {
+          "x": 39,
+          "y": 25,
+          "w": 22,
+          "h": 10
+        },
+        "speed": 68,
+        "licensePlate": "CA-707-OP"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.8 km/h, Congestion index 90%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717032 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717316",
+    "name": "Caltrans Fwy 60 Westbound Node",
+    "location": "Tech Corridor - Postmile District 7 (MP 717316)",
+    "zone": "Tech Corridor",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.13.138",
+    "vehicleCount": 82,
+    "pedestrianCount": 35,
+    "congestionScore": 89,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 28,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 86,
+      "y": 88
+    },
+    "videoTheme": "crosswalk",
+    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "imageUrl": "/incidents/illegal_parking_truck.jpg",
+    "objects": [
+      {
+        "id": "det-38-1",
+        "type": "truck",
+        "confidence": 93.7,
+        "box": {
+          "x": 40,
+          "y": 49,
+          "w": 15,
+          "h": 9
+        },
+        "speed": 72,
+        "licensePlate": "CA-423-LU"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.9 km/h, Congestion index 89%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717316 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-759990",
+    "name": "Caltrans Fwy 91 Westbound Node",
+    "location": "North Sector - Postmile District 7 (MP 759990)",
+    "zone": "North Sector",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.13.139",
+    "vehicleCount": 82,
+    "pedestrianCount": 0,
+    "congestionScore": 89,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 29,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 79,
+      "y": 35
+    },
+    "videoTheme": "tunnel",
+    "videoUrl": "/videos/cam_simulation_accident.mp4",
+    "imageUrl": "/incidents/auto_two_wheeler.jpg",
+    "objects": [
+      {
+        "id": "det-39-1",
+        "type": "truck",
+        "confidence": 90.8,
+        "box": {
+          "x": 47,
+          "y": 40,
+          "w": 21,
+          "h": 8
+        },
+        "speed": 36,
+        "licensePlate": "CA-981-MM"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.9 km/h, Congestion index 89%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 759990 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-773656",
+    "name": "Caltrans Fwy 105 Eastbound Node",
+    "location": "Waterfront Bay - Postmile District 7 (MP 773656)",
+    "zone": "Waterfront Bay",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.14.140",
+    "vehicleCount": 82,
+    "pedestrianCount": 0,
+    "congestionScore": 89,
+    "incidentType": "Pedestrian in Restricted Area",
+    "latencyMs": 42,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 30,
+      "y": 54
+    },
+    "videoTheme": "bridge",
+    "videoUrl": "/videos/cam_corridor_flow.mp4",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "objects": [
+      {
+        "id": "det-40-1",
+        "type": "truck",
+        "confidence": 94.9,
+        "box": {
+          "x": 21,
+          "y": 33,
+          "w": 42,
+          "h": 12
+        },
+        "speed": 39,
+        "licensePlate": "CA-620-QE"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 6.9 km/h, Congestion index 89%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 773656 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-716484",
+    "name": "Caltrans Fwy 110 Northbound Node",
+    "location": "Harbour District - Postmile District 7 (MP 716484)",
+    "zone": "Harbour District",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.14.141",
+    "vehicleCount": 82,
+    "pedestrianCount": 0,
+    "congestionScore": 89,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 31,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 42,
+      "y": 38
+    },
+    "videoTheme": "roundabout",
+    "videoUrl": "/videos/cam_harbour_logistics.mp4",
+    "imageUrl": "/incidents/testing1.jpg",
+    "objects": [
+      {
+        "id": "det-41-1",
+        "type": "truck",
+        "confidence": 97.3,
+        "box": {
+          "x": 50,
+          "y": 39,
+          "w": 12,
+          "h": 8
+        },
+        "speed": 61,
+        "licensePlate": "CA-888-UE"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 7 km/h, Congestion index 89%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 716484 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717738",
+    "name": "Caltrans Fwy 405 Northbound Node",
+    "location": "Tech Corridor - Postmile District 7 (MP 717738)",
+    "zone": "Tech Corridor",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.14.142",
+    "vehicleCount": 82,
+    "pedestrianCount": 36,
+    "congestionScore": 89,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 44,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 43,
+      "y": 27
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_traffic_zone.mp4",
+    "imageUrl": "/incidents/bus_congestion.jpg",
+    "objects": [
+      {
+        "id": "det-42-1",
+        "type": "motorcycle",
+        "confidence": 97.8,
+        "box": {
+          "x": 24,
+          "y": 20,
+          "w": 42,
+          "h": 32
+        },
+        "speed": 26,
+        "licensePlate": "CA-995-NE"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 7.1 km/h, Congestion index 89%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717738 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-716800",
+    "name": "Caltrans Fwy 605 Northbound Node",
+    "location": "North Sector - Postmile District 7 (MP 716800)",
+    "zone": "North Sector",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.14.143",
+    "vehicleCount": 82,
+    "pedestrianCount": 0,
+    "congestionScore": 89,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 27,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 76,
+      "y": 62
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
+    "imageUrl": "/incidents/illegal_parking_truck.jpg",
+    "objects": [
+      {
+        "id": "det-43-1",
+        "type": "motorcycle",
+        "confidence": 92.7,
+        "box": {
+          "x": 46,
+          "y": 39,
+          "w": 13,
+          "h": 14
+        },
+        "speed": 73,
+        "licensePlate": "CA-246-GU"
+      },
+      {
+        "id": "det-43-2",
+        "type": "motorcycle",
+        "confidence": 95.3,
+        "box": {
+          "x": 22,
+          "y": 45,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 59,
+        "licensePlate": "CA-456-DS"
+      },
+      {
+        "id": "det-43-3",
+        "type": "motorcycle",
+        "confidence": 90.9,
+        "box": {
+          "x": 19,
+          "y": 45,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 35,
+        "licensePlate": "CA-624-VV"
+      },
+      {
+        "id": "det-43-4",
+        "type": "motorcycle",
+        "confidence": 90.9,
+        "box": {
+          "x": 5,
+          "y": 49,
+          "w": 15,
+          "h": 13
+        },
+        "speed": 65,
+        "licensePlate": "CA-690-IA"
+      },
+      {
+        "id": "det-43-5",
+        "type": "motorcycle",
+        "confidence": 90.1,
+        "box": {
+          "x": 8,
+          "y": 46,
+          "w": 15,
+          "h": 12
+        },
+        "speed": 31,
+        "licensePlate": "CA-240-IJ"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 7.2 km/h, Congestion index 89%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 716800 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-718102",
+    "name": "Caltrans Fwy 710 Northbound Node",
+    "location": "Harbour District - Postmile District 7 (MP 718102)",
+    "zone": "Harbour District",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.14.144",
+    "vehicleCount": 82,
+    "pedestrianCount": 0,
+    "congestionScore": 89,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 22,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 59,
+      "y": 45
+    },
+    "videoTheme": "roundabout",
+    "videoUrl": "/videos/cam_harbour_logistics.mp4",
+    "imageUrl": "/incidents/auto_two_wheeler.jpg",
+    "objects": [
+      {
+        "id": "det-44-1",
+        "type": "motorcycle",
+        "confidence": 91.4,
+        "box": {
+          "x": 84,
+          "y": 24,
+          "w": 9,
+          "h": 8
+        },
+        "speed": 49,
+        "licensePlate": "CA-264-WC"
+      },
+      {
+        "id": "det-44-2",
+        "type": "motorcycle",
+        "confidence": 96.4,
+        "box": {
+          "x": 66,
+          "y": 17,
+          "w": 13,
+          "h": 10
+        },
+        "speed": 58,
+        "licensePlate": "CA-801-YL"
+      },
+      {
+        "id": "det-44-3",
+        "type": "motorcycle",
+        "confidence": 93.1,
+        "box": {
+          "x": 31,
+          "y": 11,
+          "w": 32,
+          "h": 40
+        },
+        "speed": 37,
+        "licensePlate": "CA-289-YG"
+      },
+      {
+        "id": "det-44-4",
+        "type": "motorcycle",
+        "confidence": 99.5,
+        "box": {
+          "x": 5,
+          "y": 10,
+          "w": 13,
+          "h": 40
+        },
+        "speed": 74,
+        "licensePlate": "CA-321-FI"
+      },
+      {
+        "id": "det-44-5",
+        "type": "motorcycle",
+        "confidence": 98.1,
+        "box": {
+          "x": 25,
+          "y": 22,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 70,
+        "licensePlate": "CA-179-OS"
+      },
+      {
+        "id": "det-44-6",
+        "type": "motorcycle",
+        "confidence": 98.3,
+        "box": {
+          "x": 81,
+          "y": 23,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 42,
+        "licensePlate": "CA-640-MO"
+      },
+      {
+        "id": "det-44-7",
+        "type": "motorcycle",
+        "confidence": 91.3,
+        "box": {
+          "x": 61,
+          "y": 18,
+          "w": 8,
+          "h": 9
+        },
+        "speed": 50,
+        "licensePlate": "CA-904-AM"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 7.4 km/h, Congestion index 89%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 718102 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-716908",
+    "name": "Caltrans Fwy 5 Southbound Node",
+    "location": "Highway A1 - Postmile District 7 (MP 716908)",
+    "zone": "Highway A1",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.14.145",
+    "vehicleCount": 82,
+    "pedestrianCount": 0,
+    "congestionScore": 88,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 38,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 78,
+      "y": 47
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_highway_collision.mp4",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "objects": [
+      {
+        "id": "det-45-1",
+        "type": "motorcycle",
+        "confidence": 97.9,
+        "box": {
+          "x": 30,
+          "y": 20,
+          "w": 42,
+          "h": 36
+        },
+        "speed": 36,
+        "licensePlate": "CA-859-DR"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 7.5 km/h, Congestion index 88%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 716908 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-737237",
+    "name": "Caltrans Fwy 10 Eastbound Node",
+    "location": "Downtown Core - Postmile District 7 (MP 737237)",
+    "zone": "Downtown Core",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.14.146",
+    "vehicleCount": 82,
+    "pedestrianCount": 19,
+    "congestionScore": 88,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 20,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 10,
+      "y": 84
+    },
+    "videoTheme": "intersection",
+    "videoUrl": "/videos/cam_cmc_tracked.mp4",
+    "imageUrl": "/incidents/testing1.jpg",
+    "objects": [
+      {
+        "id": "det-46-1",
+        "type": "motorcycle",
+        "confidence": 92.3,
+        "box": {
+          "x": 85,
+          "y": 29,
+          "w": 11,
+          "h": 8
+        },
+        "speed": 41,
+        "licensePlate": "CA-855-BV"
+      },
+      {
+        "id": "det-46-2",
+        "type": "motorcycle",
+        "confidence": 93.9,
+        "box": {
+          "x": 40,
+          "y": 14,
+          "w": 42,
+          "h": 30
+        },
+        "speed": 66,
+        "licensePlate": "CA-602-AJ"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 7.7 km/h, Congestion index 88%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 737237 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-717265",
+    "name": "Caltrans Fwy 60 Eastbound Node",
+    "location": "Tech Corridor - Postmile District 7 (MP 717265)",
+    "zone": "Tech Corridor",
+    "status": "offline",
+    "resolution": "1080p FHD",
+    "fps": 0,
+    "ip": "192.168.14.147",
+    "vehicleCount": 0,
+    "pedestrianCount": 30,
+    "congestionScore": 0,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 0,
+    "activeAiModels": [
+      "Offline - Diagnostics"
+    ],
+    "coordinates": {
+      "x": 58,
+      "y": 86
+    },
+    "videoTheme": "crosswalk",
+    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "imageUrl": "/incidents/bus_congestion.jpg",
+    "objects": [
+      {
+        "id": "det-47-1",
+        "type": "motorcycle",
+        "confidence": 94.1,
+        "box": {
+          "x": 40,
+          "y": 19,
+          "w": 21,
+          "h": 20
+        },
+        "speed": 70,
+        "licensePlate": "CA-318-VH"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 7.7 km/h, Congestion index 88%",
+        "severity": "Low"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 717265 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-768229",
+    "name": "Caltrans Fwy 91 Eastbound Node",
+    "location": "North Sector - Postmile District 7 (MP 768229)",
+    "zone": "North Sector",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.14.148",
+    "vehicleCount": 82,
+    "pedestrianCount": 0,
+    "congestionScore": 88,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 41,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 80,
+      "y": 34
+    },
+    "videoTheme": "tunnel",
+    "videoUrl": "/videos/cam_simulation_accident.mp4",
+    "imageUrl": "/incidents/illegal_parking_truck.jpg",
+    "objects": [
+      {
+        "id": "det-48-1",
+        "type": "motorcycle",
+        "confidence": 97.3,
+        "box": {
+          "x": 21,
+          "y": 13,
+          "w": 42,
+          "h": 21
+        },
+        "speed": 63,
+        "licensePlate": "CA-710-JN"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 7.7 km/h, Congestion index 88%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 768229 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-760112",
+    "name": "Caltrans Fwy 105 Eastbound Node",
+    "location": "Waterfront Bay - Postmile District 7 (MP 760112)",
+    "zone": "Waterfront Bay",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.14.149",
+    "vehicleCount": 82,
+    "pedestrianCount": 0,
+    "congestionScore": 88,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 30,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 36,
+      "y": 51
+    },
+    "videoTheme": "bridge",
+    "videoUrl": "/videos/cam_corridor_flow.mp4",
+    "imageUrl": "/incidents/auto_two_wheeler.jpg",
+    "objects": [
+      {
+        "id": "det-49-1",
+        "type": "motorcycle",
+        "confidence": 92.4,
+        "box": {
+          "x": 23,
+          "y": 53,
+          "w": 13,
+          "h": 11
+        },
+        "speed": 67,
+        "licensePlate": "CA-365-NL"
+      },
+      {
+        "id": "det-49-2",
+        "type": "motorcycle",
+        "confidence": 95.7,
+        "box": {
+          "x": 30,
+          "y": 52,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 28,
+        "licensePlate": "CA-292-ZI"
+      },
+      {
+        "id": "det-49-3",
+        "type": "motorcycle",
+        "confidence": 96.1,
+        "box": {
+          "x": 9,
+          "y": 50,
+          "w": 9,
+          "h": 8
+        },
+        "speed": 72,
+        "licensePlate": "CA-366-RN"
+      },
+      {
+        "id": "det-49-4",
+        "type": "motorcycle",
+        "confidence": 92.4,
+        "box": {
+          "x": 7,
+          "y": 53,
+          "w": 10,
+          "h": 8
+        },
+        "speed": 43,
+        "licensePlate": "CA-234-FK"
+      },
+      {
+        "id": "det-49-5",
+        "type": "car",
+        "confidence": 95.1,
+        "box": {
+          "x": 85,
+          "y": 43,
+          "w": 8,
+          "h": 13
+        },
+        "speed": 59,
+        "licensePlate": "CA-865-JN"
+      },
+      {
+        "id": "det-49-6",
+        "type": "motorcycle",
+        "confidence": 98,
+        "box": {
+          "x": 28,
+          "y": 73,
+          "w": 11,
+          "h": 12
+        },
+        "speed": 73,
+        "licensePlate": "CA-100-TN"
+      },
+      {
+        "id": "det-49-7",
+        "type": "motorcycle",
+        "confidence": 98.2,
+        "box": {
+          "x": 32,
+          "y": 80,
+          "w": 18,
+          "h": 10
+        },
+        "speed": 50,
+        "licensePlate": "CA-163-HF"
+      },
+      {
+        "id": "det-49-8",
+        "type": "motorcycle",
+        "confidence": 97.4,
+        "box": {
+          "x": 44,
+          "y": 80,
+          "w": 13,
+          "h": 10
+        },
+        "speed": 66,
+        "licensePlate": "CA-997-EH"
+      },
+      {
+        "id": "det-49-9",
+        "type": "motorcycle",
+        "confidence": 90.4,
+        "box": {
+          "x": 55,
+          "y": 80,
+          "w": 15,
+          "h": 8
+        },
+        "speed": 67,
+        "licensePlate": "CA-497-KK"
+      },
+      {
+        "id": "det-49-10",
+        "type": "car",
+        "confidence": 95.5,
+        "box": {
+          "x": 43,
+          "y": 42,
+          "w": 13,
+          "h": 8
+        },
+        "speed": 75,
+        "licensePlate": "CA-519-HN"
+      },
+      {
+        "id": "det-49-11",
+        "type": "car",
+        "confidence": 90.4,
+        "box": {
+          "x": 6,
+          "y": 30,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 37,
+        "licensePlate": "CA-336-AI"
+      },
+      {
+        "id": "det-49-12",
+        "type": "motorcycle",
+        "confidence": 98.3,
+        "box": {
+          "x": 14,
+          "y": 34,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 33,
+        "licensePlate": "CA-202-FN"
+      },
+      {
+        "id": "det-49-13",
+        "type": "motorcycle",
+        "confidence": 97.7,
+        "box": {
+          "x": 19,
+          "y": 36,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 56,
+        "licensePlate": "CA-317-ME"
+      },
+      {
+        "id": "det-49-14",
+        "type": "motorcycle",
+        "confidence": 91.4,
+        "box": {
+          "x": 20,
+          "y": 43,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 33,
+        "licensePlate": "CA-807-TX"
+      },
+      {
+        "id": "det-49-15",
+        "type": "motorcycle",
+        "confidence": 94.5,
+        "box": {
+          "x": 26,
+          "y": 45,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 69,
+        "licensePlate": "CA-345-CV"
+      },
+      {
+        "id": "det-49-16",
+        "type": "motorcycle",
+        "confidence": 95.3,
+        "box": {
+          "x": 10,
+          "y": 32,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 33,
+        "licensePlate": "CA-539-ZT"
+      },
+      {
+        "id": "det-49-17",
+        "type": "motorcycle",
+        "confidence": 98.3,
+        "box": {
+          "x": 15,
+          "y": 31,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 34,
+        "licensePlate": "CA-710-YY"
+      },
+      {
+        "id": "det-49-18",
+        "type": "motorcycle",
+        "confidence": 96.2,
+        "box": {
+          "x": 18,
+          "y": 32,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 33,
+        "licensePlate": "CA-929-BG"
+      },
+      {
+        "id": "det-49-19",
+        "type": "motorcycle",
+        "confidence": 91.9,
+        "box": {
+          "x": 23,
+          "y": 34,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 43,
+        "licensePlate": "CA-968-YR"
+      },
+      {
+        "id": "det-49-20",
+        "type": "motorcycle",
+        "confidence": 96,
+        "box": {
+          "x": 33,
+          "y": 38,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 65,
+        "licensePlate": "CA-182-PQ"
+      },
+      {
+        "id": "det-49-21",
+        "type": "car",
+        "confidence": 98.9,
+        "box": {
+          "x": 39,
+          "y": 38,
+          "w": 14,
+          "h": 8
+        },
+        "speed": 71,
+        "licensePlate": "CA-710-TI"
+      },
+      {
+        "id": "det-49-22",
+        "type": "car",
+        "confidence": 96.5,
+        "box": {
+          "x": 49,
+          "y": 44,
+          "w": 14,
+          "h": 8
+        },
+        "speed": 34,
+        "licensePlate": "CA-212-DW"
+      },
+      {
+        "id": "det-49-23",
+        "type": "motorcycle",
+        "confidence": 95,
+        "box": {
+          "x": 56,
+          "y": 46,
+          "w": 9,
+          "h": 8
+        },
+        "speed": 53,
+        "licensePlate": "CA-800-RD"
+      },
+      {
+        "id": "det-49-24",
+        "type": "motorcycle",
+        "confidence": 90.9,
+        "box": {
+          "x": 60,
+          "y": 48,
+          "w": 10,
+          "h": 8
+        },
+        "speed": 32,
+        "licensePlate": "CA-960-VD"
+      },
+      {
+        "id": "det-49-25",
+        "type": "motorcycle",
+        "confidence": 97.8,
+        "box": {
+          "x": 67,
+          "y": 50,
+          "w": 11,
+          "h": 9
+        },
+        "speed": 39,
+        "licensePlate": "CA-588-VM"
+      },
+      {
+        "id": "det-49-26",
+        "type": "motorcycle",
+        "confidence": 91.1,
+        "box": {
+          "x": 44,
+          "y": 51,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 46,
+        "licensePlate": "CA-987-YK"
+      },
+      {
+        "id": "det-49-27",
+        "type": "motorcycle",
+        "confidence": 98.9,
+        "box": {
+          "x": 46,
+          "y": 54,
+          "w": 9,
+          "h": 8
+        },
+        "speed": 56,
+        "licensePlate": "CA-730-NH"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 7.8 km/h, Congestion index 88%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 760112 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-763400",
+    "name": "Caltrans Fwy 110 Northbound Node",
+    "location": "Harbour District - Postmile District 7 (MP 763400)",
+    "zone": "Harbour District",
+    "status": "warning",
+    "resolution": "4K UltraHD",
+    "fps": 60,
+    "ip": "192.168.15.150",
+    "vehicleCount": 82,
+    "pedestrianCount": 0,
+    "congestionScore": 88,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 34,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 43,
+      "y": 63
+    },
+    "videoTheme": "roundabout",
+    "videoUrl": "/videos/cam_harbour_logistics.mp4",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "objects": [
+      {
+        "id": "det-50-1",
+        "type": "car",
+        "confidence": 96.8,
+        "box": {
+          "x": 5,
+          "y": 22,
+          "w": 20,
+          "h": 14
+        },
+        "speed": 32,
+        "licensePlate": "CA-260-AY"
+      },
+      {
+        "id": "det-50-2",
+        "type": "motorcycle",
+        "confidence": 99.1,
+        "box": {
+          "x": 20,
+          "y": 28,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 41,
+        "licensePlate": "CA-328-IN"
+      },
+      {
+        "id": "det-50-3",
+        "type": "motorcycle",
+        "confidence": 96.3,
+        "box": {
+          "x": 23,
+          "y": 27,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 56,
+        "licensePlate": "CA-147-GO"
+      },
+      {
+        "id": "det-50-4",
+        "type": "motorcycle",
+        "confidence": 93.9,
+        "box": {
+          "x": 28,
+          "y": 28,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 42,
+        "licensePlate": "CA-942-MN"
+      },
+      {
+        "id": "det-50-5",
+        "type": "motorcycle",
+        "confidence": 97.5,
+        "box": {
+          "x": 26,
+          "y": 25,
+          "w": 42,
+          "h": 30
+        },
+        "speed": 38,
+        "licensePlate": "CA-694-MK"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 7.9 km/h, Congestion index 88%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 763400 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  },
+  {
+    "id": "CAM-771866",
+    "name": "Caltrans Fwy 405 Southbound Node",
+    "location": "Tech Corridor - Postmile District 7 (MP 771866)",
+    "zone": "Tech Corridor",
+    "status": "warning",
+    "resolution": "1080p FHD",
+    "fps": 60,
+    "ip": "192.168.15.151",
+    "vehicleCount": 82,
+    "pedestrianCount": 23,
+    "congestionScore": 88,
+    "incidentType": "Traffic Congestion",
+    "latencyMs": 29,
+    "activeAiModels": [
+      "YOLOv8-UrbanFlow",
+      "ByteTrack-Velocity",
+      "PlateOCR-Pro"
+    ],
+    "coordinates": {
+      "x": 57,
+      "y": 17
+    },
+    "videoTheme": "highway",
+    "videoUrl": "/videos/cam_traffic_zone.mp4",
+    "imageUrl": "/incidents/testing1.jpg",
+    "objects": [
+      {
+        "id": "det-51-1",
+        "type": "car",
+        "confidence": 92.2,
+        "box": {
+          "x": 23,
+          "y": 31,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 56,
+        "licensePlate": "CA-609-WB"
+      },
+      {
+        "id": "det-51-2",
+        "type": "motorcycle",
+        "confidence": 97.8,
+        "box": {
+          "x": 32,
+          "y": 29,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 35,
+        "licensePlate": "CA-807-QM"
+      },
+      {
+        "id": "det-51-3",
+        "type": "motorcycle",
+        "confidence": 91.7,
+        "box": {
+          "x": 48,
+          "y": 28,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 35,
+        "licensePlate": "CA-976-OS"
+      },
+      {
+        "id": "det-51-4",
+        "type": "motorcycle",
+        "confidence": 96.5,
+        "box": {
+          "x": 24,
+          "y": 31,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 28,
+        "licensePlate": "CA-368-EN"
+      },
+      {
+        "id": "det-51-5",
+        "type": "motorcycle",
+        "confidence": 95.5,
+        "box": {
+          "x": 31,
+          "y": 30,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 38,
+        "licensePlate": "CA-470-QN"
+      },
+      {
+        "id": "det-51-6",
+        "type": "motorcycle",
+        "confidence": 92.4,
+        "box": {
+          "x": 49,
+          "y": 27,
+          "w": 14,
+          "h": 9
+        },
+        "speed": 32,
+        "licensePlate": "CA-169-XI"
+      },
+      {
+        "id": "det-51-7",
+        "type": "motorcycle",
+        "confidence": 94.7,
+        "box": {
+          "x": 62,
+          "y": 28,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 64,
+        "licensePlate": "CA-630-DN"
+      },
+      {
+        "id": "det-51-8",
+        "type": "motorcycle",
+        "confidence": 92.2,
+        "box": {
+          "x": 69,
+          "y": 27,
+          "w": 12,
+          "h": 8
+        },
+        "speed": 41,
+        "licensePlate": "CA-879-NG"
+      },
+      {
+        "id": "det-51-9",
+        "type": "motorcycle",
+        "confidence": 90.6,
+        "box": {
+          "x": 80,
+          "y": 26,
+          "w": 19,
+          "h": 10
+        },
+        "speed": 67,
+        "licensePlate": "CA-644-PE"
+      },
+      {
+        "id": "det-51-10",
+        "type": "motorcycle",
+        "confidence": 93.1,
+        "box": {
+          "x": 26,
+          "y": 29,
+          "w": 8,
+          "h": 8
+        },
+        "speed": 43,
+        "licensePlate": "CA-937-WW"
+      }
+    ],
+    "recentEvents": [
+      {
+        "time": "12:34:11",
+        "text": "Real sensor telemetry: Flow speed 8.1 km/h, Congestion index 88%",
+        "severity": "High"
+      },
+      {
+        "time": "12:20:00",
+        "text": "Station 771866 calibrated against District 7 gateway.",
+        "severity": "Low"
+      }
+    ]
+  }
+];
+
+export const REAL_SAFETY_ALERTS: SafetyAlert[] = [
+  {
+    "id": "ALT-2041",
+    "type": "Traffic Accident",
+    "severity": "Critical",
+    "collisionType": "Vehicle-Vehicle",
+    "hazardStatus": "Critical: Active Collision",
+    "timeToCollisionSec": 0.4,
+    "proximityMeters": 2.1,
+    "relativeClosureSpeedKmH": 64,
+    "interactingObjectIds": [
+      "det-hazard-3",
+      "det-hazard-4"
+    ],
+    "location": "Caltrans Fwy 5 Southbound Node (Autonomous 4K AI Hub) (Highway A1 - Postmile District 7 (MP 716939))",
+    "zone": "Highway A1",
+    "cameraId": "CAM-716939",
+    "cameraName": "Caltrans Fwy 5 Southbound Node (Autonomous 4K AI Hub)",
+    "timestamp": "12:34:11 PM",
+    "timeAgo": "2m ago",
+    "aiExplanation": "Multi-entity kinetic collision: Heavy commercial hauler and passenger car collided in active travel lane with rapid deceleration (-7.2 m/s²).",
+    "confidence": 97.4,
+    "acknowledged": false,
+    "vehiclesInvolved": [
+      "Heavy Commercial Truck (CA-771-BG)",
+      "Sedan (CA-882-KM)"
+    ],
+    "snapshotBg": "accident",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "videoUrl": "/videos/cam_ai_stream.mov",
+    "dispatchedStatus": "none"
+  },
+  {
+    "id": "INC-PED-02",
+    "type": "Pedestrian in Restricted Area",
+    "severity": "Critical",
+    "collisionType": "Vehicle-Pedestrian",
+    "hazardStatus": "Warning: Accident-Prone Near-Miss",
+    "timeToCollisionSec": 1.1,
+    "proximityMeters": 4.8,
+    "relativeClosureSpeedKmH": 45,
+    "interactingObjectIds": [
+      "det-hazard-1",
+      "det-hazard-2"
+    ],
+    "location": "Caltrans Fwy 10 Westbound Node (Downtown Core - Postmile District 7 (MP 764050))",
+    "zone": "Downtown Core",
+    "cameraId": "CAM-764050",
+    "cameraName": "Caltrans Fwy 10 Westbound Node",
+    "timestamp": "12:28:44 PM",
+    "timeAgo": "6m ago",
+    "aiExplanation": "Trajectory intersection hazard: Pedestrian entered active carriageway outside designated crosswalk. Approaching sedan executing emergency braking (TTC 1.1s).",
+    "confidence": 96.2,
+    "acknowledged": false,
+    "vehiclesInvolved": [
+      "Sedan (CA-884-AX)",
+      "Pedestrian (P-08)"
+    ],
+    "snapshotBg": "pedestrian",
+    "imageUrl": "/incidents/auto_two_wheeler.jpg",
+    "videoUrl": "/videos/cam_corridor_flow.mp4",
+    "dispatchedStatus": "none"
+  },
+  {
+    "id": "INC-ANIM-01",
+    "type": "Traffic Accident",
+    "severity": "High",
+    "collisionType": "Vehicle-Animal",
+    "hazardStatus": "Caution: Hazard Ahead",
+    "timeToCollisionSec": 1.8,
+    "proximityMeters": 8.5,
+    "relativeClosureSpeedKmH": 38,
+    "interactingObjectIds": [
+      "det-hazard-5",
+      "det-hazard-6"
+    ],
+    "location": "Caltrans Fwy 605 Northbound Node (North Sector - Postmile District 7 (MP 717940))",
+    "zone": "North Sector",
+    "cameraId": "CAM-717940",
+    "cameraName": "Caltrans Fwy 605 Northbound Node",
+    "timestamp": "12:15:30 PM",
+    "timeAgo": "19m ago",
+    "aiExplanation": "Kinematic tracking detected wildlife animal roadway intrusion in outer traffic lane with approaching vehicle closure. Pre-collision warning dispatched.",
+    "confidence": 94.6,
+    "acknowledged": false,
+    "vehiclesInvolved": [
+      "SUV (CA-409-BR)",
+      "Wildlife Animal (Obstacle)"
+    ],
+    "snapshotBg": "animal",
+    "imageUrl": "/incidents/testing1.jpg",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
+    "dispatchedStatus": "none"
+  },
+  {
+    "id": "ALT-2040",
+    "type": "Wrong-Way Vehicle",
+    "severity": "Critical",
+    "location": "Caltrans Fwy 405 Southbound Node (Tech Corridor - Postmile District 7 (MP 718280))",
+    "zone": "Tech Corridor",
+    "cameraId": "CAM-718280",
+    "cameraName": "Caltrans Fwy 405 Southbound Node",
+    "timestamp": "12:30:19 PM",
+    "timeAgo": "6m ago",
+    "aiExplanation": "ByteTrack optical trajectory anomaly: Vehicle reversed against designated freeway traffic vector.",
+    "confidence": 98.9,
+    "acknowledged": false,
+    "vehiclesInvolved": [
+      "Passenger Car (CA-104-XX)"
+    ],
+    "snapshotBg": "wrongway",
+    "imageUrl": "/incidents/testing1.jpg",
+    "videoUrl": "/videos/cam_traffic_zone.mp4",
+    "dispatchedStatus": "none"
+  },
+  {
+    "id": "ALT-2038",
+    "type": "Overspeeding",
+    "severity": "High",
+    "location": "Caltrans Fwy 110 Southbound Node (Harbour District - Postmile District 7 (MP 759418))",
+    "zone": "Harbour District",
+    "cameraId": "CAM-759418",
+    "cameraName": "Caltrans Fwy 110 Southbound Node",
+    "timestamp": "12:29:40 PM",
+    "timeAgo": "7m ago",
+    "aiExplanation": "YOLOv8 Speed Estimation flagged vehicle velocity at 144 km/h in restricted 60 km/h zone.",
+    "confidence": 99.1,
+    "acknowledged": false,
+    "vehiclesInvolved": [
+      "Commercial Vehicle (CA-990-DX)"
+    ],
+    "snapshotBg": "speed",
+    "dispatchedStatus": "none"
+  },
+  {
+    "id": "ALT-2035",
+    "type": "Illegal Parking",
+    "severity": "Medium",
+    "location": "Caltrans Fwy 105 Eastbound Node (Waterfront Bay - Postmile District 7 (MP 760100))",
+    "zone": "Waterfront Bay",
+    "cameraId": "CAM-760100",
+    "cameraName": "Caltrans Fwy 105 Eastbound Node",
+    "timestamp": "12:14:32 PM",
+    "timeAgo": "22m ago",
+    "aiExplanation": "Heavy flatbed truck stationary for > 15 minutes inside emergency response corridor.",
+    "confidence": 95.8,
+    "acknowledged": false,
+    "vehiclesInvolved": [
+      "Flatbed Hauler (CA-889-LD)"
+    ],
+    "snapshotBg": "parking",
+    "imageUrl": "/incidents/illegal_parking_truck.jpg",
+    "dispatchedStatus": "none"
+  },
+  {
+    "id": "ALT-2031",
+    "type": "Traffic Congestion",
+    "severity": "Medium",
+    "location": "Caltrans Fwy 10 Westbound Node (Downtown Core - Postmile District 7 (MP 717045))",
+    "zone": "Downtown Core",
+    "cameraId": "CAM-717045",
+    "cameraName": "Caltrans Fwy 10 Westbound Node",
+    "timestamp": "11:55:00 AM",
+    "timeAgo": "41m ago",
+    "aiExplanation": "T-GCN Speed Telemetry indicates Level of Service grade F: link velocity dropped to 3.1 km/h.",
+    "confidence": 94,
+    "acknowledged": true,
+    "vehiclesInvolved": [
+      "Public Transit Bus 08",
+      "Multiple sedans"
+    ],
+    "snapshotBg": "traffic",
+    "imageUrl": "/incidents/bus_congestion.jpg",
+    "dispatchedStatus": "dispatched",
+    "dispatchedUnits": [
+      "Sentinel Patrol PAT-01"
+    ],
+    "dispatchedAt": "11:58:30 AM",
+    "etaMinutes": 2
+  },
+  {
+    "id": "INC-27FF50",
+    "type": "Pedestrian in Restricted Area",
+    "severity": "High",
+    "location": "Caltrans Fwy 10 Westbound Node (Downtown Core - Postmile District 7 (MP 764050))",
+    "zone": "Downtown Core",
+    "cameraId": "CAM-764050",
+    "cameraName": "Caltrans Fwy 10 Westbound Node",
+    "timestamp": "11:42:15 AM",
+    "timeAgo": "54m ago",
+    "aiExplanation": "Sentinel optical inference flagged unauthorized pedestrian crossing on arterial expressway (Zone Z-05). Immediate hazard.",
+    "confidence": 88.5,
+    "acknowledged": true,
+    "vehiclesInvolved": [
+      "Pedestrian (P-88)",
+      "Approaching Commercial Hauler"
+    ],
+    "snapshotBg": "pedestrian",
+    "imageUrl": "/incidents/auto_two_wheeler.jpg",
+    "dispatchedStatus": "dispatched",
+    "dispatchedUnits": [
+      "Sentinel Patrol PAT-01"
+    ],
+    "dispatchedAt": "11:44:00 AM",
+    "etaMinutes": 1
+  },
+  {
+    "id": "INC-034D0A",
+    "type": "Traffic Accident",
+    "severity": "High",
+    "location": "Caltrans Fwy 605 Northbound Node (North Sector - Postmile District 7 (MP 717940))",
+    "zone": "North Sector",
+    "cameraId": "CAM-717940",
+    "cameraName": "Caltrans Fwy 605 Northbound Node",
+    "timestamp": "11:15:30 AM",
+    "timeAgo": "1h 20m ago",
+    "aiExplanation": "Confirmed lateral impact in Zone Z-06: kinetic collision between passenger car and motorcycle (confidence 81.0%).",
+    "confidence": 89.2,
+    "acknowledged": true,
+    "vehiclesInvolved": [
+      "Passenger Car (CA-310-KK)",
+      "Motorcycle (M-201)"
+    ],
+    "snapshotBg": "accident",
+    "imageUrl": "/incidents/accident_detection.jpg",
+    "videoUrl": "/videos/cam_intersection_incident.mp4",
+    "dispatchedStatus": "dispatched",
+    "dispatchedUnits": [
+      "Ambulance AMB-02",
+      "Highway Patrol"
+    ],
+    "dispatchedAt": "11:18:00 AM",
+    "etaMinutes": 0
+  },
+  {
+    "id": "INC-8EE2CB",
+    "type": "Pedestrian in Restricted Area",
+    "severity": "Medium",
+    "location": "Caltrans Fwy 105 Eastbound Node (Waterfront Bay - Postmile District 7 (MP 773656))",
+    "zone": "Waterfront Bay",
+    "cameraId": "CAM-773656",
+    "cameraName": "Caltrans Fwy 105 Eastbound Node",
+    "timestamp": "10:50:12 AM",
+    "timeAgo": "1h 45m ago",
+    "aiExplanation": "Sentinel vision model flagged pedestrian walking in highway median shoulder (Zone Z-03). Low visibility corridor warning.",
+    "confidence": 91.5,
+    "acknowledged": false,
+    "vehiclesInvolved": [
+      "Pedestrian (P-104)"
+    ],
+    "snapshotBg": "pedestrian",
+    "dispatchedStatus": "none"
+  },
+  {
+    "id": "INC-EEAC4A",
+    "type": "Traffic Accident",
+    "severity": "High",
+    "location": "Caltrans Fwy 91 Westbound Node (North Sector - Postmile District 7 (MP 717435))",
+    "zone": "North Sector",
+    "cameraId": "CAM-717435",
+    "cameraName": "Caltrans Fwy 91 Westbound Node",
+    "timestamp": "10:12:00 AM",
+    "timeAgo": "2h 24m ago",
+    "aiExplanation": "Multi-vehicle collision between transit bus and flatbed trailer in Downtown Core (Zone Z-02). Collision score 84.8%.",
+    "confidence": 93.6,
+    "acknowledged": true,
+    "vehiclesInvolved": [
+      "Transit Bus 14",
+      "Flatbed Hauler (CA-302-AA)"
+    ],
+    "snapshotBg": "accident",
+    "videoUrl": "/videos/cam_highway_collision.mp4",
+    "dispatchedStatus": "dispatched",
+    "dispatchedUnits": [
+      "Sentinel Patrol PAT-02",
+      "Tow Squad"
+    ],
+    "dispatchedAt": "10:15:30 AM",
+    "etaMinutes": 0
+  },
+  {
+    "id": "ALT-2022",
+    "type": "Overspeeding",
+    "severity": "High",
+    "location": "Caltrans Fwy 105 Eastbound Node (Waterfront Bay - Postmile District 7 (MP 760130))",
+    "zone": "Waterfront Bay",
+    "cameraId": "CAM-760130",
+    "cameraName": "Caltrans Fwy 105 Eastbound Node",
+    "timestamp": "09:45:18 AM",
+    "timeAgo": "2h 50m ago",
+    "aiExplanation": "Optical radar telemetry tracked vehicle at 108 km/h in designated 65 km/h limit zone.",
+    "confidence": 98.4,
+    "acknowledged": false,
+    "vehiclesInvolved": [
+      "Sedan (CA-411-ZZ)"
+    ],
+    "snapshotBg": "speed",
+    "dispatchedStatus": "none"
+  }
+];
+
+export const REAL_CONGESTION_HOTSPOTS: TrafficHotspot[] = [
+  {
+    "id": "HOT-LINK-116157",
+    "location": "Caltrans Fwy 5 Southbound Node (Autonomous 4K AI Hub) (Highway A1)",
+    "zone": "Highway A1",
+    "congestionStatus": "Critical",
+    "congestionScore": 96,
+    "averageSpeed": 2.5,
+    "cameraId": "CAM-716939",
+    "cameraName": "Caltrans Fwy 5 Southbound Node (Autonomous 4K AI Hub)",
+    "lastUpdated": "12:35:10 PM",
+    "trend": "increasing",
+    "historicalVolume": [
+      67,
+      77,
+      86,
+      91,
+      96
+    ]
+  },
+  {
+    "id": "HOT-LINK-102122",
+    "location": "Caltrans Fwy 10 Westbound Node (Downtown Core)",
+    "zone": "Downtown Core",
+    "congestionStatus": "Critical",
+    "congestionScore": 95,
+    "averageSpeed": 3.1,
+    "cameraId": "CAM-717045",
+    "cameraName": "Caltrans Fwy 10 Westbound Node",
+    "lastUpdated": "12:35:10 PM",
+    "trend": "stable",
+    "historicalVolume": [
+      67,
+      76,
+      86,
+      90,
+      95
+    ]
+  },
+  {
+    "id": "HOT-LINK-112142",
+    "location": "Caltrans Fwy 60 Westbound Node (Tech Corridor)",
+    "zone": "Tech Corridor",
+    "congestionStatus": "Critical",
+    "congestionScore": 95,
+    "averageSpeed": 3.1,
+    "cameraId": "CAM-717269",
+    "cameraName": "Caltrans Fwy 60 Westbound Node",
+    "lastUpdated": "12:35:10 PM",
+    "trend": "increasing",
+    "historicalVolume": [
+      67,
+      76,
+      86,
+      90,
+      95
+    ]
+  },
+  {
+    "id": "HOT-LINK-102128",
+    "location": "Caltrans Fwy 91 Eastbound Node (North Sector)",
+    "zone": "North Sector",
+    "congestionStatus": "Critical",
+    "congestionScore": 95,
+    "averageSpeed": 3.4,
+    "cameraId": "CAM-768914",
+    "cameraName": "Caltrans Fwy 91 Eastbound Node",
+    "lastUpdated": "12:35:10 PM",
+    "trend": "stable",
+    "historicalVolume": [
+      67,
+      76,
+      86,
+      90,
+      95
+    ]
+  },
+  {
+    "id": "HOT-LINK-112140",
+    "location": "Caltrans Fwy 105 Eastbound Node (Waterfront Bay)",
+    "zone": "Waterfront Bay",
+    "congestionStatus": "Critical",
+    "congestionScore": 94,
+    "averageSpeed": 3.6,
+    "cameraId": "CAM-760130",
+    "cameraName": "Caltrans Fwy 105 Eastbound Node",
+    "lastUpdated": "12:35:10 PM",
+    "trend": "increasing",
+    "historicalVolume": [
+      66,
+      75,
+      85,
+      89,
+      94
+    ]
+  },
+  {
+    "id": "HOT-LINK-112102",
+    "location": "Caltrans Fwy 110 Southbound Node (Harbour District)",
+    "zone": "Harbour District",
+    "congestionStatus": "Critical",
+    "congestionScore": 94,
+    "averageSpeed": 3.8,
+    "cameraId": "CAM-763267",
+    "cameraName": "Caltrans Fwy 110 Southbound Node",
+    "lastUpdated": "12:35:10 PM",
+    "trend": "stable",
+    "historicalVolume": [
+      66,
+      75,
+      85,
+      89,
+      94
+    ]
+  }
+];
+
+export const REAL_HOURLY_TRAFFIC_DATA: HourlyTrafficData[] = [
+  {
+    "hour": "00:00",
+    "volume": 1515,
+    "baseline": 1439,
+    "averageSpeed": 16.6
+  },
+  {
+    "hour": "02:00",
+    "volume": 1651,
+    "baseline": 1568,
+    "averageSpeed": 15.7
+  },
+  {
+    "hour": "04:00",
+    "volume": 1981,
+    "baseline": 1882,
+    "averageSpeed": 15.3
+  },
+  {
+    "hour": "06:00",
+    "volume": 2328,
+    "baseline": 2212,
+    "averageSpeed": 18.3
+  },
+  {
+    "hour": "08:00",
+    "volume": 2829,
+    "baseline": 2688,
+    "averageSpeed": 16.2
+  },
+  {
+    "hour": "10:00",
+    "volume": 3135,
+    "baseline": 2978,
+    "averageSpeed": 16.5
+  },
+  {
+    "hour": "12:00",
+    "volume": 3256,
+    "baseline": 3093,
+    "averageSpeed": 16.4
+  },
+  {
+    "hour": "14:00",
+    "volume": 3168,
+    "baseline": 3010,
+    "averageSpeed": 15.7
+  },
+  {
+    "hour": "16:00",
+    "volume": 2836,
+    "baseline": 2694,
+    "averageSpeed": 16
+  },
+  {
+    "hour": "18:00",
+    "volume": 2425,
+    "baseline": 2304,
+    "averageSpeed": 15.2
+  },
+  {
+    "hour": "20:00",
+    "volume": 1974,
+    "baseline": 1875,
+    "averageSpeed": 15.6
+  },
+  {
+    "hour": "22:00",
+    "volume": 1633,
+    "baseline": 1551,
+    "averageSpeed": 16.5
+  }
+];
+
+export const REAL_VEHICLE_DISTRIBUTION: VehicleDistribution[] = [
+  {
+    "name": "Cars / Sedans / SUVs",
+    "count": 17003,
+    "percentage": 58,
+    "color": "#06b6d4"
+  },
+  {
+    "name": "Heavy Commercial Trucks",
+    "count": 5329,
+    "percentage": 22,
+    "color": "#f59e0b"
+  },
+  {
+    "name": "Two-Wheelers & Bikes",
+    "count": 2856,
+    "percentage": 12,
+    "color": "#3b82f6"
+  },
+  {
+    "name": "Public Transit Buses",
+    "count": 1904,
+    "percentage": 8,
+    "color": "#10b981"
+  }
+];
+
+export const REAL_ZONE_SPEED_DATA: ZoneSpeedData[] = [
+  {
+    "zone": "Downtown Core",
+    "avgSpeed": 37.7,
+    "congestionScore": 42,
+    "vehicleCount": 60600
+  },
+  {
+    "zone": "Highway A1",
+    "avgSpeed": 52.9,
+    "congestionScore": 25,
+    "vehicleCount": 50520
+  },
+  {
+    "zone": "Tech Corridor",
+    "avgSpeed": 48.3,
+    "congestionScore": 26,
+    "vehicleCount": 110760
+  },
+  {
+    "zone": "North Sector",
+    "avgSpeed": 43.7,
+    "congestionScore": 33,
+    "vehicleCount": 110640
+  },
+  {
+    "zone": "Waterfront Bay",
+    "avgSpeed": 45.1,
+    "congestionScore": 31,
+    "vehicleCount": 60120
+  },
+  {
+    "zone": "Harbour District",
+    "avgSpeed": 40.5,
+    "congestionScore": 38,
+    "vehicleCount": 110280
+  }
+];
+
+export const REAL_WEEKLY_CONGESTION_TREND: WeeklyTrendPoint[] = [
+  {
+    "day": "Mon",
+    "peakCongestion": 96,
+    "avgCongestion": 74,
+    "incidents": 27
+  },
+  {
+    "day": "Tue",
+    "peakCongestion": 98,
+    "avgCongestion": 74,
+    "incidents": 27
+  },
+  {
+    "day": "Wed",
+    "peakCongestion": 92,
+    "avgCongestion": 74,
+    "incidents": 26
+  },
+  {
+    "day": "Thu",
+    "peakCongestion": 98,
+    "avgCongestion": 76,
+    "incidents": 27
+  },
+  {
+    "day": "Fri",
+    "peakCongestion": 98,
+    "avgCongestion": 76,
+    "incidents": 27
+  },
+  {
+    "day": "Sat",
+    "peakCongestion": 97,
+    "avgCongestion": 76,
+    "incidents": 27
+  },
+  {
+    "day": "Sun",
+    "peakCongestion": 92,
+    "avgCongestion": 76,
+    "incidents": 26
+  }
+];
+
+export const REAL_TOTAL_VEHICLES_TODAY: number = 23801;
+
+export const REAL_CITY_SECTORS = [
+  { id: 'sec-downtown', name: 'Downtown Core', status: 'critical', congestion: 82, activeIncidents: 1, cameras: 12 },
+  { id: 'sec-highway', name: 'Highway A1', status: 'warning', congestion: 65, activeIncidents: 1, cameras: 14 },
+  { id: 'sec-tech', name: 'Tech Corridor', status: 'normal', congestion: 42, activeIncidents: 1, cameras: 8 },
+  { id: 'sec-north', name: 'North Sector', status: 'warning', congestion: 68, activeIncidents: 0, cameras: 8 },
+  { id: 'sec-waterfront', name: 'Waterfront Bay', status: 'normal', congestion: 46, activeIncidents: 0, cameras: 6 },
+  { id: 'sec-harbour', name: 'Harbour District', status: 'warning', congestion: 72, activeIncidents: 1, cameras: 4 },
+];
