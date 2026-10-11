@@ -52,7 +52,7 @@ export const DATASET_METADATA: DatasetMetadata = {
     "fps": 60,
     "durationSeconds": 741.8,
     "codec": "HEVC / H.265 (hvc1)",
-    "streamUrl": "/videos/cam_ai_stream.mov",
+    "streamUrl": "/videos/cam_highway_collision.mp4",
     "assignedCameraId": "CAM-716939"
   }
 };
@@ -84,7 +84,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 90
     },
     "videoTheme": "highway",
-    "videoUrl": "/videos/cam_ai_stream.mov",
+    "videoUrl": "/videos/cam_highway_collision.mp4",
     "imageUrl": "/incidents/accident_detection.jpg",
     "objects": [
       {
@@ -175,7 +175,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 88
     },
     "videoTheme": "intersection",
-    "videoUrl": "/videos/cam_cmc_tracked.mp4",
+    "videoUrl": "/videos/cam_downtown_cmc.mp4",
     "imageUrl": "/incidents/testing1.jpg",
     "objects": [
       {
@@ -229,7 +229,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 87
     },
     "videoTheme": "crosswalk",
-    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
     "imageUrl": "/incidents/bus_congestion.jpg",
     "objects": [
       {
@@ -1025,7 +1025,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 89
     },
     "videoTheme": "intersection",
-    "videoUrl": "/videos/cam_cmc_tracked.mp4",
+    "videoUrl": "/videos/cam_downtown_cmc.mp4",
     "imageUrl": "/incidents/accident_detection.jpg",
     "objects": [
       {
@@ -1131,7 +1131,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 88
     },
     "videoTheme": "crosswalk",
-    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
     "imageUrl": "/incidents/testing1.jpg",
     "objects": [
       {
@@ -1847,7 +1847,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 86
     },
     "videoTheme": "intersection",
-    "videoUrl": "/videos/cam_cmc_tracked.mp4",
+    "videoUrl": "/videos/cam_downtown_cmc.mp4",
     "imageUrl": "/incidents/auto_two_wheeler.jpg",
     "objects": [
       {
@@ -1901,7 +1901,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 86
     },
     "videoTheme": "crosswalk",
-    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
     "imageUrl": "/incidents/accident_detection.jpg",
     "objects": [
       {
@@ -2279,7 +2279,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 67
     },
     "videoTheme": "highway",
-    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
     "imageUrl": "/incidents/bus_congestion.jpg",
     "objects": [
       {
@@ -2333,7 +2333,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 83
     },
     "videoTheme": "intersection",
-    "videoUrl": "/videos/cam_cmc_tracked.mp4",
+    "videoUrl": "/videos/cam_downtown_cmc.mp4",
     "imageUrl": "/incidents/illegal_parking_truck.jpg",
     "objects": [
       {
@@ -2387,7 +2387,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 88
     },
     "videoTheme": "crosswalk",
-    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
     "imageUrl": "/incidents/auto_two_wheeler.jpg",
     "objects": [
       {
@@ -2819,7 +2819,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 88
     },
     "videoTheme": "intersection",
-    "videoUrl": "/videos/cam_cmc_tracked.mp4",
+    "videoUrl": "/videos/cam_downtown_cmc.mp4",
     "imageUrl": "/incidents/bus_congestion.jpg",
     "objects": [
       {
@@ -2873,7 +2873,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 88
     },
     "videoTheme": "crosswalk",
-    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
     "imageUrl": "/incidents/illegal_parking_truck.jpg",
     "objects": [
       {
@@ -3435,7 +3435,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 84
     },
     "videoTheme": "intersection",
-    "videoUrl": "/videos/cam_cmc_tracked.mp4",
+    "videoUrl": "/videos/cam_downtown_cmc.mp4",
     "imageUrl": "/incidents/testing1.jpg",
     "objects": [
       {
@@ -3500,7 +3500,7 @@ export const REAL_CAMERAS: CameraFeed[] = [
       "y": 86
     },
     "videoTheme": "crosswalk",
-    "videoUrl": "/videos/cam_wild_tracked.mp4",
+    "videoUrl": "/videos/cam_expressway_wild.mp4",
     "imageUrl": "/incidents/bus_congestion.jpg",
     "objects": [
       {

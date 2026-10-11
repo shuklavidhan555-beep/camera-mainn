@@ -384,9 +384,9 @@ const realCameras = selectedStations.map((st, i) => {
 
   // Assign real video streams distributed across all zones and themes
   const zoneVideos = {
-    'Downtown Core': ['/videos/cam_downtown_cmc.mp4', '/videos/cam_cmc_tracked.mp4', '/videos/cam_traffic_zone.mp4'],
-    'Highway A1': ['/videos/cam_ai_stream.mov', '/videos/cam_highway_collision.mp4', '/videos/cam_expressway_wild.mp4', '/videos/cam_wild_tracked.mp4'],
-    'Tech Corridor': ['/videos/cam_traffic_zone.mp4', '/videos/cam_corridor_flow.mp4', '/videos/cam_wild_tracked.mp4'],
+    'Downtown Core': ['/videos/cam_downtown_cmc.mp4', '/videos/cam_downtown_cmc.mp4', '/videos/cam_traffic_zone.mp4'],
+    'Highway A1': ['/videos/cam_highway_collision.mp4', '/videos/cam_highway_collision.mp4', '/videos/cam_expressway_wild.mp4', '/videos/cam_expressway_wild.mp4'],
+    'Tech Corridor': ['/videos/cam_traffic_zone.mp4', '/videos/cam_corridor_flow.mp4', '/videos/cam_expressway_wild.mp4'],
     'North Sector': ['/videos/cam_simulation_accident.mp4', '/videos/cam_expressway_wild.mp4', '/videos/cam_corridor_flow.mp4'],
     'Waterfront Bay': ['/videos/cam_intersection_incident.mp4', '/videos/cam_corridor_flow.mp4', '/videos/cam_downtown_cmc.mp4'],
     'Harbour District': ['/videos/cam_harbour_logistics.mp4', '/videos/cam_industry_gate.mp4', '/videos/cam_harbour_logistics.mp4']
@@ -394,7 +394,7 @@ const realCameras = selectedStations.map((st, i) => {
   const vList = zoneVideos[zone] || ['/videos/cam_traffic_zone.mp4'];
   let videoUrl = vList[i % vList.length];
   if (i === 0) {
-    videoUrl = '/videos/cam_ai_stream.mov';
+    videoUrl = '/videos/cam_highway_collision.mp4';
   }
 
   const incidentImages = [
@@ -483,7 +483,7 @@ const realAlerts = [
     vehiclesInvolved: ['Heavy Commercial Truck (CA-771-BG)', 'Sedan (CA-882-KM)'],
     snapshotBg: 'accident',
     imageUrl: '/incidents/accident_detection.jpg',
-    videoUrl: '/videos/cam_ai_stream.mov',
+    videoUrl: '/videos/cam_highway_collision.mp4',
     dispatchedStatus: 'none',
   },
   {
@@ -811,7 +811,7 @@ const datasetOutput = {
       fps: 60,
       durationSeconds: 741.8,
       codec: 'HEVC / H.265 (hvc1)',
-      streamUrl: '/videos/cam_ai_stream.mov',
+      streamUrl: '/videos/cam_highway_collision.mp4',
       assignedCameraId: 'CAM-716939'
     }
   },

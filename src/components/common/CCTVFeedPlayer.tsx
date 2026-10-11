@@ -9,7 +9,8 @@ import {
   WifiOff,
   ZoomIn,
   RotateCcw,
-  Video
+  Video,
+  Play
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCommandCenter } from '../../context/CommandCenterContext';
@@ -36,16 +37,22 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
   const [zoomLevel, setZoomLevel] = useState(1);
   const [currentTimecode, setCurrentTimecode] = useState('');
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const [hasVideoError, setHasVideoError] = useState(false);
+  const [autoplayHeld, setAutoplayHeld] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Fast, browser-compatible stream: Map ProRes MOV (which browsers cannot decode) to real MP4
+  // Fast, browser-compatible stream: Map ProRes MOV or other streams to real playable MP4
   const resolvedVideoUrl = React.useMemo(() => {
     if (!camera.videoUrl) return undefined;
     if (camera.videoUrl.endsWith('.mov') || camera.videoUrl.includes('cam_ai_stream.mov')) {
+      return '/videos/cam_highway_collision.mp4';
+    }
+    if (camera.videoUrl.includes('cam_cmc_tracked.mp4')) {
       return '/videos/cam_downtown_cmc.mp4';
+    }
+    if (camera.videoUrl.includes('cam_wild_tracked.mp4')) {
+      return '/videos/cam_expressway_wild.mp4';
     }
     return camera.videoUrl;
   }, [camera.videoUrl]);
@@ -64,12 +71,43 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
     return computed;
   }, [camera.activeHazards, stabilizedObjects]);
 
-  // Highest severity active hazard for top HUD banner (strictly display genuine collision or severe near-miss)
-  const highestHazard = React.useMemo(() => {
-    return activeInteractions.find((h) => h.status === 'Critical: Active Collision')
-      || activeInteractions.find((h) => h.status === 'Warning: Accident-Prone Near-Miss')
-      || null;
+  // Single most severe acute conflict for clean, non-cluttered vector overlay
+  const primaryConflict = React.useMemo(() => {
+    if (!activeInteractions || activeInteractions.length === 0) return null;
+
+    const getSeverityWeight = (status: string) => {
+      if (status === 'Critical: Active Collision') return 3;
+      if (status === 'Warning: Accident-Prone Near-Miss') return 2;
+      return 1;
+    };
+
+    const sorted = [...activeInteractions].sort((a, b) => {
+      const weightA = getSeverityWeight(a.status);
+      const weightB = getSeverityWeight(b.status);
+      if (weightB !== weightA) return weightB - weightA;
+
+      if ((b.riskScore || 0) !== (a.riskScore || 0)) {
+        return (b.riskScore || 0) - (a.riskScore || 0);
+      }
+
+      const ttcA = a.timeToCollisionSec ?? 999;
+      const ttcB = b.timeToCollisionSec ?? 999;
+      if (ttcA !== ttcB) return ttcA - ttcB;
+
+      return a.proximityMeters - b.proximityMeters;
+    });
+
+    return sorted[0] || null;
   }, [activeInteractions]);
+
+  // Highest severity active hazard for top HUD banner
+  const highestHazard = React.useMemo(() => {
+    if (!primaryConflict) return null;
+    if (primaryConflict.status === 'Critical: Active Collision' || primaryConflict.status === 'Warning: Accident-Prone Near-Miss') {
+      return primaryConflict;
+    }
+    return null;
+  }, [primaryConflict]);
 
   // Live second-by-second timecode
   useEffect(() => {
@@ -101,18 +139,30 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
       playPromise
         .then(() => {
           setIsVideoPlaying(true);
-          setHasVideoError(false);
+          setAutoplayHeld(false);
         })
-        .catch(() => {
+        .catch((err: unknown) => {
+          // Ignore AbortError when play is superseded by a newer load/render
+          if (err && typeof err === 'object' && 'name' in err && (err as { name: string }).name === 'AbortError') {
+            return;
+          }
           // Autoplay suspended or pending user gesture
+          setIsVideoPlaying(false);
+          setAutoplayHeld(true);
         });
     }
   }, [camera.status, resolvedVideoUrl]);
 
   useEffect(() => {
     setIsVideoPlaying(false);
-    setHasVideoError(false);
-    setupAndPlayVideo();
+    setAutoplayHeld(false);
+
+    // Give DOM element a frame to bind attributes and begin stream playback
+    const timer = setTimeout(() => {
+      setupAndPlayVideo();
+    }, 40);
+
+    return () => clearTimeout(timer);
   }, [camera.id, resolvedVideoUrl, setupAndPlayVideo]);
 
   const handleCaptureSnapshot = (e: React.MouseEvent) => {
@@ -124,7 +174,7 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
       const ctx = canvas.getContext('2d');
       if (ctx) {
         const video = videoRef.current;
-        if (video && isVideoPlaying && !hasVideoError) {
+        if (video && video.readyState >= 2) {
           ctx.drawImage(video, 0, 0, 1280, 720);
         } else {
           // Render informative evidence capture frame
@@ -163,11 +213,8 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
   const isWarning = camera.status === 'warning';
 
   const handleContainerClick = () => {
-    if (videoRef.current && videoRef.current.paused && !isOffline && resolvedVideoUrl) {
-      videoRef.current.play().then(() => {
-        setIsVideoPlaying(true);
-        setHasVideoError(false);
-      }).catch(() => {});
+    if (videoRef.current && !isOffline && resolvedVideoUrl) {
+      setupAndPlayVideo();
     }
     if (onSelect) {
       onSelect();
@@ -194,47 +241,29 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
         )}
         style={{ transform: `scale(${zoomLevel})` }}
       >
-        {/* Base Layer: Authentic photographic CCTV frame (guarantees authentic footage, never cartoon) */}
-        <img
-          src={camera.imageUrl || '/incidents/accident_detection.jpg'}
-          alt={camera.name}
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="lazy"
-        />
-
-        {/* Real CCTV Video Stream (Plays genuine H.264/MP4 stream over photographic base) */}
-        {resolvedVideoUrl && !hasVideoError && !isOffline && (
+        {/* For cameras with video: Video is the PRIMARY visible element with preload="auto", no still image masking */}
+        {resolvedVideoUrl && !isOffline ? (
           <video
-            ref={(el) => {
-              videoRef.current = el;
-              if (el) {
-                el.muted = true;
-                el.defaultMuted = true;
-                el.playsInline = true;
-                if (el.paused) {
-                  el.play().catch(() => {});
-                }
-              }
-            }}
+            ref={videoRef}
+            key={resolvedVideoUrl}
             src={resolvedVideoUrl}
             autoPlay
             loop
             muted
             playsInline
-            preload={isDetailed ? "auto" : "metadata"}
-            onPlay={() => setIsVideoPlaying(true)}
+            preload="auto"
+            onPlay={() => {
+              setIsVideoPlaying(true);
+              setAutoplayHeld(false);
+            }}
             onPlaying={() => {
               setIsVideoPlaying(true);
-              setHasVideoError(false);
+              setAutoplayHeld(false);
             }}
-            onCanPlay={(e) => {
-              const el = e.currentTarget;
-              if (el.paused) {
-                el.play().catch(() => {});
+            onPause={() => {
+              if (videoRef.current?.paused) {
+                setIsVideoPlaying(false);
               }
-            }}
-            onLoadedData={() => {
-              setupAndPlayVideo();
             }}
             onEnded={() => {
               if (videoRef.current) {
@@ -242,14 +271,44 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
                 videoRef.current.play().catch(() => {});
               }
             }}
-            onError={() => {
-              setHasVideoError(true);
-              setIsVideoPlaying(false);
-            }}
-            className={cn(
-              "absolute inset-0 w-full h-full object-cover transition-opacity duration-300 pointer-events-none opacity-100"
-            )}
+            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 pointer-events-none opacity-100"
+          >
+            <source src={resolvedVideoUrl} type="video/mp4" />
+          </video>
+        ) : !isOffline ? (
+          /* Fallback image ONLY when camera has no video URL */
+          <img
+            src={camera.imageUrl || '/incidents/accident_detection.jpg'}
+            alt={camera.name}
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="lazy"
           />
+        ) : null}
+
+        {/* Clear, Clickable "Click to Play Video Stream" Overlay when Autoplay is Held by Browser Policy */}
+        {resolvedVideoUrl && !isOffline && autoplayHeld && (
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              setupAndPlayVideo();
+            }}
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[2px] cursor-pointer hover:bg-black/40 transition-colors pointer-events-auto"
+            title="Click to start video stream"
+          >
+            <div className="flex flex-col items-center gap-2 p-3 rounded-lg bg-slate-900/90 border border-cyan-500/60 shadow-2xl text-center group-hover:scale-105 transition-transform max-w-[85%]">
+              <div className="w-10 h-10 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-400 shadow-md">
+                <Play className="w-5 h-5 fill-cyan-400 translate-x-0.5" />
+              </div>
+              <div>
+                <p className="font-mono text-xs font-bold text-cyan-300 uppercase tracking-wider">
+                  Click to Play Video Stream
+                </p>
+                <p className="font-mono text-[10px] text-slate-400">
+                  Autoplay held by browser • Click to resume live optical feed
+                </p>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Offline Banner Overlay */}
@@ -305,46 +364,48 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
               </div>
             )}
 
-            {/* SVG Layer: Proximity Vector Lines between Interacting Entities */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
-              {activeInteractions.map((inter) => {
-                const isCritical = inter.status === 'Critical: Active Collision';
-                const isWarning = inter.status === 'Warning: Accident-Prone Near-Miss';
-                const strokeColor = isCritical ? '#ef4444' : isWarning ? '#f59e0b' : '#eab308';
-                return (
-                  <g key={inter.id}>
-                    {/* Glowing outer shadow line */}
-                    <line
-                      x1={`${inter.pointA.x}`}
-                      y1={`${inter.pointA.y}`}
-                      x2={`${inter.pointB.x}`}
-                      y2={`${inter.pointB.y}`}
-                      stroke={strokeColor}
-                      strokeWidth={isCritical ? "2.2" : "1.4"}
-                      strokeOpacity="0.8"
-                      strokeDasharray={isCritical ? "3 1.5" : "2 2"}
-                      className={isCritical ? "animate-pulse" : ""}
-                    />
-                    {/* Interacting Node Target Pins */}
-                    <circle cx={`${inter.pointA.x}`} cy={`${inter.pointA.y}`} r={isCritical ? "1.8" : "1.2"} fill={strokeColor} />
-                    <circle cx={`${inter.pointB.x}`} cy={`${inter.pointB.y}`} r={isCritical ? "1.8" : "1.2"} fill={strokeColor} />
-                  </g>
-                );
-              })}
-            </svg>
+            {/* SVG Layer: Single Clean Proximity Vector Line for Most Severe Acute Conflict */}
+            {primaryConflict && (
+              <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
+                {(() => {
+                  const isCritical = primaryConflict.status === 'Critical: Active Collision';
+                  const isWarning = primaryConflict.status === 'Warning: Accident-Prone Near-Miss';
+                  const strokeColor = isCritical ? '#ef4444' : isWarning ? '#f59e0b' : '#eab308';
+                  return (
+                    <g key={primaryConflict.id}>
+                      {/* Glowing outer shadow line */}
+                      <line
+                        x1={`${primaryConflict.pointA.x}`}
+                        y1={`${primaryConflict.pointA.y}`}
+                        x2={`${primaryConflict.pointB.x}`}
+                        y2={`${primaryConflict.pointB.y}`}
+                        stroke={strokeColor}
+                        strokeWidth={isCritical ? "2.2" : "1.4"}
+                        strokeOpacity="0.85"
+                        strokeDasharray={isCritical ? "3 1.5" : "2 2"}
+                        className={isCritical ? "animate-pulse" : ""}
+                      />
+                      {/* Interacting Node Target Pins */}
+                      <circle cx={`${primaryConflict.pointA.x}`} cy={`${primaryConflict.pointA.y}`} r={isCritical ? "2" : "1.4"} fill={strokeColor} />
+                      <circle cx={`${primaryConflict.pointB.x}`} cy={`${primaryConflict.pointB.y}`} r={isCritical ? "2" : "1.4"} fill={strokeColor} />
+                    </g>
+                  );
+                })()}
+              </svg>
+            )}
 
-            {/* Floating Kinematic Metric Badges at Vector Midpoints */}
-            {activeInteractions.map((inter) => {
-              const midX = (inter.pointA.x + inter.pointB.x) / 2;
-              const midY = (inter.pointA.y + inter.pointB.y) / 2;
-              const isCritical = inter.status === 'Critical: Active Collision';
-              const isWarning = inter.status === 'Warning: Accident-Prone Near-Miss';
+            {/* Single Floating Kinematic Metric Badge at Vector Midpoint */}
+            {primaryConflict && (() => {
+              const midX = (primaryConflict.pointA.x + primaryConflict.pointB.x) / 2;
+              const midY = (primaryConflict.pointA.y + primaryConflict.pointB.y) / 2;
+              const isCritical = primaryConflict.status === 'Critical: Active Collision';
+              const isWarning = primaryConflict.status === 'Warning: Accident-Prone Near-Miss';
               return (
                 <div
-                  key={`badge-${inter.id}`}
+                  key={`badge-${primaryConflict.id}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    const createdAlert = createDynamicSafetyAlert(camera, inter);
+                    const createdAlert = createDynamicSafetyAlert(camera, primaryConflict);
                     setSelectedAlertForModal(createdAlert);
                   }}
                   className={cn(
@@ -360,18 +421,18 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
                 >
                   <span>{isCritical ? '⚡ COLLISION' : isWarning ? '⚠️ NEAR-MISS' : '👁️ HAZARD'}</span>
                   <span>•</span>
-                  <span>{inter.proximityMeters}m</span>
-                  {inter.timeToCollisionSec !== null && (
+                  <span>{primaryConflict.proximityMeters}m</span>
+                  {primaryConflict.timeToCollisionSec !== null && (
                     <>
                       <span>•</span>
-                      <span>TTC: {inter.timeToCollisionSec}s</span>
+                      <span>TTC: {primaryConflict.timeToCollisionSec}s</span>
                     </>
                   )}
                   <span>•</span>
-                  <span>{inter.relativeVelocityKmH} km/h</span>
+                  <span>{primaryConflict.relativeVelocityKmH} km/h</span>
                 </div>
               );
-            })}
+            })()}
 
             {/* Stabilized Bounding Boxes with Class-Specific Styling */}
             {stabilizedObjects.map((obj) => {
@@ -496,10 +557,10 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
             {/* Stream Mode Indicator */}
             {!isOffline && (
               <span
-                title={resolvedVideoUrl && !hasVideoError ? "Active RTSP Video Feed" : "Static CCTV Sensor Snapshot"}
+                title={resolvedVideoUrl ? "Active RTSP Video Feed" : "Static CCTV Sensor Snapshot"}
                 className="bg-emerald-950/80 border border-emerald-600/60 text-emerald-300 px-1.5 py-0.5 rounded text-[9px] font-bold flex items-center gap-1"
               >
-                <Video className="w-2.5 h-2.5" /> {resolvedVideoUrl && !hasVideoError ? 'LIVE RTSP' : 'CCTV FRAME'}
+                <Video className="w-2.5 h-2.5" /> {resolvedVideoUrl ? 'LIVE RTSP' : 'CCTV FRAME'}
               </span>
             )}
           </div>
@@ -537,16 +598,15 @@ export const CCTVFeedPlayer: React.FC<CCTVFeedPlayerProps> = ({
 
           {/* Quick HUD controls overlay */}
           <div className="flex items-center gap-1 pointer-events-auto">
-            {hasVideoError && (
+            {resolvedVideoUrl && (
               <button
                 type="button"
-                title="Retry RTSP Stream"
+                title="Restart RTSP Stream"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setHasVideoError(false);
                   setupAndPlayVideo();
                 }}
-                className="p-1.5 rounded bg-amber-950/80 border border-amber-600/60 text-amber-300 text-xs transition-colors hover:text-white"
+                className="p-1.5 rounded bg-black/70 backdrop-blur text-slate-400 hover:text-white text-xs transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </button>
